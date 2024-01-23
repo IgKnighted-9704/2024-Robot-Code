@@ -336,15 +336,13 @@ public class SwerveSubsystem extends SubsystemBase
   }
 
   /**
-   * Gets the current yaw angle of the robot, as reported by the swerve pose estimator in the underlying
-   * drivebase.  Note, this is not the raw gyro reading, this may be corrected from calls to
-   * resetOdometry().
+   * Gets the current yaw angle of the robot, as reported by the imu.  CCW positive, not wrapped.
    *
    * @return The yaw angle
    */
   public Rotation2d getHeading()
   {
-    return getPose().getRotation();
+    return swerveDrive.getYaw();
   }
 
   /**
