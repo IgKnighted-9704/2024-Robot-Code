@@ -4,9 +4,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.io.File;
@@ -91,20 +93,23 @@ public class Robot extends TimedRobot
     }
   }
 
+  private double time = 0;
+
   /**
    * This autonomous runs the autonomous command selected by your {@link RobotContainer} class.
    */
   @Override
   public void autonomousInit()
   {
-    m_robotContainer.setMotorBrake(true);
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    time = Timer.getFPGATimestamp();
+    // m_robotContainer.setMotorBrake(true);
+    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // schedule the autonomous command (example)
-    if (m_autonomousCommand != null)
-    {
-      m_autonomousCommand.schedule();
-    }
+    // // schedule the autonomous command (example)
+    // if (m_autonomousCommand != null)
+    // {
+    //   m_autonomousCommand.schedule();
+    // }
   }
 
   /**
@@ -113,6 +118,12 @@ public class Robot extends TimedRobot
   @Override
   public void autonomousPeriodic()
   {
+    double deltaTime = Timer.getFPGATimestamp() - time;
+    if (deltaTime < 1) {
+      SmartDashboard.putNumber("thing", deltaTime);
+      m_robotContainer.drivebase.drive(new Translation2d(0.5 * m_robotContainer.drivebase.maximumSpeed, 0), 0, true);
+    }
+    SmartDashboard.putNumber("thing2", Math.random());
   }
 
   @Override
@@ -122,12 +133,14 @@ public class Robot extends TimedRobot
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
+
     if (m_autonomousCommand != null)
     {
       m_autonomousCommand.cancel();
     }
-    m_robotContainer.setDriveMode();
-    m_robotContainer.setMotorBrake(true);
+    // m_robotContainer.setDriveMode();
+    // m_robotContainer.setMotorBrake(true);
+    
   }
 
   /**

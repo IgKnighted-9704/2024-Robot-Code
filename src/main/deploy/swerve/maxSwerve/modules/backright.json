@@ -1,7 +1,7 @@
 {
   "drive": {
-    "type": "sparkmax",
-    "id": 9,
+    "type": "kraken",
+    "id": 13,
     "canbus": null
   },
   "angle": {
