@@ -1,6 +1,6 @@
 {
   "drive": {
-    "type": "kraken",
+    "type": "talonfx",
     "id": 11,
     "canbus": null
   },
