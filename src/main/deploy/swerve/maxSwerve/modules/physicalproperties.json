@@ -8,7 +8,7 @@
     "angle": 20
   },
   "rampRate": {
-    "drive": 0.5,
+    "drive": 0.2,
     "angle": 0.2
   },
   "optimalVoltage": 12,
