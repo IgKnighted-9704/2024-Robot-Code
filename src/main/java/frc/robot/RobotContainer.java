@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -124,10 +125,15 @@ public class RobotContainer
   public void runAuton()
   {
     System.out.println("running");
-    CommandScheduler.getInstance().schedule(drivebase.driveCommand(
-        () -> -0.5,
+
+    Timer.delay(0.7);
+  
+    drivebase.driveCommand(
+        () -> -0.8,
         () -> 0,
-        () -> 0));
+        () -> 0).schedule();
+
+        
   };
 
   public void setDriveMode()

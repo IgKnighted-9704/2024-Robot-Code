@@ -109,6 +109,7 @@ public class Robot extends TimedRobot
     // m_robotContainer.getAutonomousCommand();
      // public void getAutonomousCommand()
   // {
+     m_robotContainer.runAuton();
   }
 
   /**
@@ -117,7 +118,7 @@ public class Robot extends TimedRobot
   @Override
   public void autonomousPeriodic()
   {
-    m_robotContainer.runAuton();
+   
   }
 
   @Override
