@@ -5,20 +5,15 @@
 package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
@@ -36,12 +31,10 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                          "swerve/maxSwerve"));
-  // CommandJoystick rotationController = new CommandJoystick(1);
-  // Replace with CommandPS4Controller or CommandJoystick if needed
-  CommandJoystick driverController = new CommandJoystick(1);
 
-  // CommandJoystick driverController   = new CommandJoystick(3);//(OperatorConstants.DRIVER_CONTROLLER_PORT);
-  XboxController driverXbox = new XboxController(0);
+  // Replace with CommandPS4Controller or CommandJoystick if needed
+  // final CommandXboxController driverXbox = new CommandXboxController(0);
+  final CommandPS4Controller driverPS4 = new CommandPS4Controller(0);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -52,16 +45,16 @@ public class RobotContainer
     configureBindings();
 
     AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
-                                                                   () -> MathUtil.applyDeadband(driverXbox.getLeftY(),
+                                                                   () -> -MathUtil.applyDeadband(driverPS4.getLeftY(),
                                                                                                 OperatorConstants.LEFT_Y_DEADBAND),
-                                                                   () -> MathUtil.applyDeadband(driverXbox.getLeftX(),
+                                                                   () -> -MathUtil.applyDeadband(driverPS4.getLeftX(),
                                                                                                 OperatorConstants.LEFT_X_DEADBAND),
-                                                                   () -> MathUtil.applyDeadband(driverXbox.getRightX(),
+                                                                   () -> -MathUtil.applyDeadband(driverPS4.getRightX(),
                                                                                                 OperatorConstants.RIGHT_X_DEADBAND),
-                                                                   driverXbox::getYButtonPressed,
-                                                                   driverXbox::getAButtonPressed,
-                                                                   driverXbox::getXButtonPressed,
-                                                                   driverXbox::getBButtonPressed);
+                                                                   driverPS4.getHID()::getTriangleButtonPressed,
+                                                                   driverPS4.getHID()::getCrossButtonPressed,
+                                                                   driverPS4.getHID()::getSquareButtonPressed,
+                                                                   driverPS4.getHID()::getCircleButtonPressed);
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -69,10 +62,10 @@ public class RobotContainer
     // left stick controls translation
     // right stick controls the desired angle NOT angular rotation
     Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverXbox.getRightX(),
-        () -> driverXbox.getRightY());
+        () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> driverPS4.getRightX(),
+        () -> driverPS4.getRightY());
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -80,17 +73,17 @@ public class RobotContainer
     // left stick controls translation
     // right stick controls the angular velocity of the robot
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverXbox.getRawAxis(4));
+        () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> driverPS4.getRightX() * 0.5);
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
-        () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-        () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverXbox.getRawAxis(2));
+        () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+        () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+        () -> driverPS4.getRawAxis(2));
 
     drivebase.setDefaultCommand(
-        !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
+        !RobotBase.isSimulation() ? driveFieldOrientedDirectAngle : driveFieldOrientedAnglularVelocity);
   }
 
   /**
@@ -104,10 +97,13 @@ public class RobotContainer
   {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
-    new JoystickButton(driverXbox, 1).onTrue((new InstantCommand(drivebase::zeroGyro)));
-    // new JoystickButton(driverXbox, 3).onTrue(new InstantCommand(drivebase::addFakeVisionReading));
-    new JoystickButton(driverXbox, 2).onTrue((new InstantCommand(drivebase::lock, drivebase)));
-//    new JoystickButton(driverXbox, 3).whileTrue(new RepeatCommand(new InstantCommand(drivebase::lock, drivebase)));
+    driverPS4.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    // driverPS4.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
+    // driverPS4.circle().whileTrue(
+    //     Commands.deferredProxy(() -> drivebase.driveToPose(
+    //                                new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
+    //                           ));
+    driverPS4.square().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
   }
 
   /**
@@ -115,26 +111,11 @@ public class RobotContainer
    *
    * @return the command to run in autonomous
    */
-  // public void getAutonomousCommand()
-  // {
-  //   System.out.println("running");
-  //   Translation2d translation = new Translation2d(25, 0);
-    
-  //   drivebase.drive(translation, 0, false);
-  // }
-  public void runAuton()
+  public Command getAutonomousCommand()
   {
-    System.out.println("running");
-
-    Timer.delay(0.7);
-  
-    drivebase.driveCommand(
-        () -> -0.8,
-        () -> 0,
-        () -> 0).schedule();
-
-        
-  };
+    // An example command will be run in autonomous
+    return drivebase.getAutonomousCommand("New Auto");
+  }
 
   public void setDriveMode()
   {

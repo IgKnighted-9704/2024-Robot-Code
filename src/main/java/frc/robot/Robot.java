@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.io.File;
 import java.io.IOException;
 import swervelib.parser.SwerveParser;
-import edu.wpi.first.math.geometry.Translation2d;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
@@ -99,17 +98,13 @@ public class Robot extends TimedRobot
   public void autonomousInit()
   {
     m_robotContainer.setMotorBrake(true);
-    // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // // schedule the autonomous command (example)
-    // if (m_autonomousCommand != null)
-    // {
-    //   m_autonomousCommand.schedule();
-    // }
-    // m_robotContainer.getAutonomousCommand();
-     // public void getAutonomousCommand()
-  // {
-     m_robotContainer.runAuton();
+    // schedule the autonomous command (example)
+    if (m_autonomousCommand != null)
+    {
+      m_autonomousCommand.schedule();
+    }
   }
 
   /**
@@ -118,7 +113,6 @@ public class Robot extends TimedRobot
   @Override
   public void autonomousPeriodic()
   {
-   
   }
 
   @Override
