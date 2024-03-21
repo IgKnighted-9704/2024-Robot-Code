@@ -10,14 +10,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
+import frc.robot.subsystems.manipulators.Manipulator;
 import java.io.File;
 
 /**
@@ -35,6 +38,10 @@ public class RobotContainer
   // Replace with CommandPS4Controller or CommandJoystick if needed
   // final CommandXboxController driverXbox = new CommandXboxController(0);
   final CommandPS4Controller driverPS4 = new CommandPS4Controller(0);
+
+  private final Manipulator manip = Manipulator.getInstance();
+
+  private double currArmTarget = 0.0;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -97,14 +104,98 @@ public class RobotContainer
   {
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
-    driverPS4.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+    driverPS4.circle().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     // driverPS4.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
     // driverPS4.circle().whileTrue(
     //     Commands.deferredProxy(() -> drivebase.driveToPose(
     //                                new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
     //                           ));
-    driverPS4.square().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+    // driverPS4.square().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+
+     // Intake Command
+        Command intakeCommand = new InstantCommand(() -> {
+            if (driverPS4.R1().getAsBoolean() && manip.getNoteSensor()) {
+                manip.intake(0.375);
+                if (driverPS4.getR2Axis() < 0.5) {
+                    this.currArmTarget = Manipulator.kARM_FLOOR_POS;
+                }
+            } else if (driverPS4.L1().getAsBoolean()) {
+                manip.intake(-1.0);
+                manip.shoot(-0.25);
+            } else {
+                manip.intake(0.0);
+                manip.shoot(0.0);
+            }
+
+            if (driverPS4.R1().getAsBoolean() && !manip.getNoteSensor()) {
+                // Perform rumble action
+            }
+            // Reset arm target on bumper release
+            if (driverPS4.R1().getAsBoolean() == false) {
+                this.currArmTarget = Manipulator.kARM_FENDER_POS;
+            }
+        });
+
+        // Shooter Command
+        Command shooterCommand = new InstantCommand(() -> {
+            if (driverPS4.getR2Axis() > 0.1) {
+                if (manip.getArmPosition() < Manipulator.kARM_START_POS) {
+                    manip.shoot(0.25);
+                } else {
+                    // High goal shooting and vision aiming logic
+                    this.currArmTarget = Manipulator.kARM_HIGH_POS;
+                }
+            }
+
+            if (driverPS4.getR2Axis() > 0.5) {
+                if (manip.getArmPosition() < Manipulator.kARM_START_POS) {
+                    manip.intake(1.0);
+                    manip.shoot(0.5);
+                } else {
+                    manip.shoot((driverPS4.getR2Axis() - 0.5) * 2);
+                }
+
+                if (driverPS4.R1().getAsBoolean()) {
+                    manip.intake(1.0);
+                }
+            } else {
+                manip.shoot(0.0);
+            }
+        });
+
+        // Arm Control Command
+        Command armControlCommand = new InstantCommand(() -> {
+            if (driverPS4.triangle().getAsBoolean()) {
+                this.currArmTarget = Manipulator.kARM_AMP_POS;
+            }
+
+            if (driverPS4.povUp().getAsBoolean()) {
+                manip.moveArm(0.5); // Up
+                this.currArmTarget = manip.getArmPosition();
+            } else if (driverPS4.povDown().getAsBoolean()) {
+                manip.moveArm(-0.5); // Down
+                this.currArmTarget = manip.getArmPosition();
+            } else {
+                manip.armToPosition(currArmTarget);
+            }
+
+            SmartDashboard.putNumber("Arm", manip.getArmPosition());
+        });
+
+        // Button bindings
+        driverPS4.cross().onTrue(intakeCommand);
+        driverPS4.square().onTrue(intakeCommand); // Assuming the same command for Square button
+        driverPS4.square().whileTrue(intakeCommand); // Assuming the same command for Square button
+        driverPS4.R2().onTrue(shooterCommand);
+        driverPS4.triangle().onTrue(armControlCommand);
+        driverPS4.povUp().onTrue(armControlCommand);
+        driverPS4.povDown().onTrue(armControlCommand);
+
+        // intakeCommand.schedule();
+        // shooterCommand.schedule();
+        // armControlCommand.schedule();
   }
+  
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
