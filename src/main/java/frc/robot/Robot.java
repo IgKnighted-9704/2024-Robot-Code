@@ -128,6 +128,8 @@ public class Robot extends TimedRobot
     }
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
+
+    m_robotContainer.drive.schedule();
   }
 
   /**
