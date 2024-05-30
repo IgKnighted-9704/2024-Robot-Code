@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import java.io.File;
@@ -51,6 +52,10 @@ public class Robot extends TimedRobot
     // Create a timer to disable motor brake a few seconds after disable.  This will let the robot stop
     // immediately when disabled, but then also let it be pushed more 
     disabledTimer = new Timer();
+
+    SmartDashboard.putNumber("Arm", 0);
+    // SmartDashboard.putNumber("Arm PID", -1.0);
+    // SmartDashboard.putNumber("Arm Target", 1.0);
   }
 
   /**
@@ -104,6 +109,7 @@ public class Robot extends TimedRobot
     if (m_autonomousCommand != null)
     {
       // m_autonomousCommand.schedule();
+      m_robotContainer.runAuton();
     }
   }
 

@@ -5,16 +5,21 @@
 package frc.robot;
 
 import java.io.File;
+import java.sql.Driver;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.units.Time;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -41,42 +46,68 @@ public class RobotContainer
 
   private final Manipulator manip = Manipulator.getInstance();
 
-  private double currArmTarget = 0.0;
-
-  private boolean shooterOn = false;
+  private double currArmTarget = Manipulator.kARM_START_POS;
+  private int intake_counter = 0;
 
         // Intake Command
         Command driveControls = new RunCommand(() -> {
 
+          // System.out.println(driverPS4.L2().getAsBoolean());
+
+          // if (driverPS4.L2().getAsBoolean()) {
+          //       manip.intake(1.0);
+          //       // shoot in speaker
+          // } else {
+          //   manip.intake(0.0);
+          // }
+          
+          // if (driverPS4.R2().getAsBoolean()) {
+          //     manip.shoot(1.0);
+          // } else {
+          //   manip.shoot(0.0);
+          // }
+          // System.out.println(intake_counter);
+
           // if pressing intake and note is not there
-          if (driverPS4.R1().getAsBoolean() && manip.getNoteSensor()) {
-                manip.intake(0.375);
+          if (driverPS4.R1().getAsBoolean() && manip.getNoteShooterSensor()) {
+                manip.intake(0.0);
+          } else if (driverPS4.R1().getAsBoolean() && !manip.getNoteEntrySensor()) { // && manip.getNoteSensor()
                 this.currArmTarget = Manipulator.kARM_FLOOR_POS;
-                // outtake
-            } else if (driverPS4.L1().getAsBoolean()) {
                 manip.intake(-1.0);
-                manip.shoot(-0.8);
+                // intake_counter++;
+                // if (intake_counter < 100) {
+                //   this.currArmTarget = Manipulator.kARM_FLOOR_POS;
+                // }
+                // else {
+                //   this.currArmTarget = Manipulator.kARM_FENDER_POS;
+                // }
+                // outtake
+            } else if (driverPS4.R1().getAsBoolean() && manip.getNoteEntrySensor()) {
+              this.currArmTarget = Manipulator.kARM_FENDER_POS;
+              manip.intake(-1.0);
+            
+            } else if (driverPS4.L1().getAsBoolean()) {
+                manip.intake(0.5);
+                manip.shoot(-0.5);
                 // shoot in speaker
             } else if (driverPS4.R2().getAsBoolean()) {
-              manip.intake(1.0);
-              manip.shoot(1.0);
+              manip.intake(-1.0);
+              manip.shoot(0.65);
                 // idle
-            } else if (!this.shooterOn) {
+            } else if (driverPS4.L2().getAsBoolean()) {
                 manip.intake(0.0);
-                manip.shoot(0.0);
+                manip.shoot(0.65);
             } else {
                 manip.intake(0.0);
-                manip.shoot(-0.8);
+                manip.shoot(0.0);
             }
 
             // prevent dragging on ground
             driverPS4.R1().onFalse(new InstantCommand(() -> {
-              this.currArmTarget = Manipulator.kARM_FENDER_POS;
+              if (manip.getArmPosition() < Manipulator.kARM_FENDER_POS)
+                 this.currArmTarget = Manipulator.kARM_FENDER_POS;
+              intake_counter = 0;
             }));
-
-            if (driverPS4.L2().getAsBoolean()) {
-              shooterOn = !shooterOn;
-            }
 
             // arm
             if (driverPS4.square().getAsBoolean()) {
@@ -91,91 +122,33 @@ public class RobotContainer
               this.currArmTarget = Manipulator.kARM_START_POS;
             }
 
-            if (driverPS4.povUp().getAsBoolean()) {
-                manip.moveArm(0.5); // Up
-                this.currArmTarget = manip.getArmPosition();
-            } else if (driverPS4.povDown().getAsBoolean()) {
-                manip.moveArm(-0.5); // Down
-                this.currArmTarget = manip.getArmPosition();
-            } else {
-                manip.armToPosition(currArmTarget);
+            if (driverPS4.povLeft().getAsBoolean()) { 
+              this.currArmTarget = Manipulator.kARM_FLOOR_POS;
             }
 
+            if (driverPS4.povUp().getAsBoolean()) {
+                manip.moveArm(-0.5); // Up
+                this.currArmTarget = manip.getArmPosition();
+            } else if (driverPS4.povDown().getAsBoolean()) {
+                manip.moveArm(0.5); // Down
+                this.currArmTarget = manip.getArmPosition();
+            } else {
+                manip.armToPosition(this.currArmTarget);
+                // System.out.println("Moving arm");
+            }
+
+            // if (driverPS4.triangle().getAsBoolean()) {
+            //   manip.armToPosition(SmartDashboard.getNumber("Arm Target", 1));
+            // }
+
             SmartDashboard.putNumber("Arm", manip.getArmPosition());
+            SmartDashboard.putNumber("Arm Target", this.currArmTarget);
+            SmartDashboard.putBoolean("Sensor", manip.getNoteEntrySensor());
+
 
           });
 
         Command drive = driveControls.repeatedly();
-
-        // // Intake Command
-        // Command intakeCommand = new InstantCommand(() -> {
-        //     if (driverPS4.R1().getAsBoolean() && manip.getNoteSensor()) {
-        //         manip.intake(0.375);
-        //         if (driverPS4.getR2Axis() < 0.5) {
-        //             this.currArmTarget = Manipulator.kARM_FLOOR_POS;
-        //         }
-        //     } else if (driverPS4.L1().getAsBoolean()) {
-        //         manip.intake(-1.0);
-        //         manip.shoot(-0.25);
-        //     } else {
-        //         manip.intake(0.0);
-        //         manip.shoot(0.0);
-        //     }
-
-        //     if (driverPS4.R1().getAsBoolean() && !manip.getNoteSensor()) {
-        //         // Perform rumble action
-        //     }
-        //     // Reset arm target on bumper release
-        //     if (driverPS4.R1().getAsBoolean() == false) {
-        //         this.currArmTarget = Manipulator.kARM_FENDER_POS;
-        //     }
-        // });
-
-        // // Shooter Command
-        // Command shooterCommand = new InstantCommand(() -> {
-        //     if (driverPS4.getR2Axis() > 0.1) {
-        //         if (manip.getArmPosition() < Manipulator.kARM_START_POS) {
-        //             manip.shoot(0.25);
-        //         } else {
-        //             // High goal shooting and vision aiming logic
-        //             this.currArmTarget = Manipulator.kARM_HIGH_POS;
-        //         }
-        //     }
-
-        //     if (driverPS4.getR2Axis() > 0.5) {
-        //         if (manip.getArmPosition() < Manipulator.kARM_START_POS) {
-        //             manip.intake(1.0);
-        //             manip.shoot(0.5);
-        //         } else {
-        //             manip.shoot((driverPS4.getR2Axis() - 0.5) * 2);
-        //         }
-
-        //         if (driverPS4.R1().getAsBoolean()) {
-        //             manip.intake(1.0);
-        //         }
-        //     } else {
-        //         manip.shoot(0.0);
-        //     }
-        // });
-
-        // // Arm Control Command
-        // Command armControlCommand = new RunCommand(() -> {
-        //     if (driverPS4.triangle().getAsBoolean()) {
-        //         this.currArmTarget = Manipulator.kARM_AMP_POS;
-        //     }
-
-        //     if (driverPS4.povUp().getAsBoolean()) {
-        //         manip.moveArm(0.5); // Up
-        //         this.currArmTarget = manip.getArmPosition();
-        //     } else if (driverPS4.povDown().getAsBoolean()) {
-        //         manip.moveArm(-0.5); // Down
-        //         this.currArmTarget = manip.getArmPosition();
-        //     } else {
-        //         manip.armToPosition(currArmTarget);
-        //     }
-
-        //     SmartDashboard.putNumber("Arm", manip.getArmPosition());
-        // });
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -216,7 +189,7 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverPS4.getRightX() * 0.5);
+        () -> driverPS4.getRawAxis(2) * 0.75);
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
@@ -224,7 +197,7 @@ public class RobotContainer
         () -> driverPS4.getRawAxis(2));
 
     drivebase.setDefaultCommand(
-        !RobotBase.isSimulation() ? driveFieldOrientedDirectAngle : driveFieldOrientedAnglularVelocity);
+        !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
   }
 
   /**
@@ -271,6 +244,62 @@ public class RobotContainer
     // An example command will be run in autonomous
     return drivebase.getAutonomousCommand("New Auto");
   }
+;
+  public void runAuton()
+  {
+    System.out.println("running");
+    CommandScheduler.getInstance().cancelAll();
+
+    // Timer.delay(0.7);
+    // Command auto = new RunCommand(() -> { 
+    //   drivebase.driveCommand(
+    //     () -> -0.8,
+    //     () -> 0,
+    //     () -> 0);
+
+    //     Timer.delay(2.5);
+
+    //     drivebase.driveCommand(
+    //     () -> 0,
+    //     () -> 0,
+    //     () -> 0);
+    // });
+
+    // move arm up
+    Command prepToShootPreload = new RunCommand(() -> {
+      manip.armToPosition(Manipulator.kARM_HIGH_POS);
+    });
+
+    Command armTask = prepToShootPreload.repeatedly();
+
+    Command speedFlywheel = new RunCommand(() -> {
+      // speed up shooter
+      manip.shoot(0.65);
+    });
+
+    Command runIntake = new RunCommand(() -> {
+      manip.intake(-1);
+    });
+
+    armTask.schedule();
+
+    if (manip.getArmPosition() >= 0.12) {
+      speedFlywheel.schedule();
+      runIntake.schedule();
+    }
+
+    // time to keep shooter on for
+    // Timer.delay(2);
+
+    // run intake to shoot
+    // manip.intake(-1);
+  
+    // auto.schedule();
+    /*drivebase.driveCommand(
+        () -> -0.8,
+        () -> 0,
+        () -> 0).schedule();*/
+  };
 
   public void setDriveMode()
   {
