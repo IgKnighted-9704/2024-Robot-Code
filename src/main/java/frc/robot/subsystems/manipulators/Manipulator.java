@@ -41,7 +41,6 @@ public class Manipulator {
         sensor = new DigitalInput(SENSOR_ID);
         sensor2 = new DigitalInput(SENSOR2_ID);
 
-
         armEncoder = armLeft.getEncoder();
 
         intakeMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
@@ -88,6 +87,10 @@ public class Manipulator {
 
     public double getArmPosition() {
         return armEncoder.getPosition();
+    }
+
+    public void resetArmEncoder() {
+        armEncoder.setPosition(0.0);
     }
 
     public boolean getNoteEntrySensor() {

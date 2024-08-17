@@ -72,7 +72,10 @@ public class RobotContainer
           if (driverPS4.R1().getAsBoolean() && manip.getNoteShooterSensor()) {
                 manip.intake(0.0);
           } else if (driverPS4.R1().getAsBoolean() && !manip.getNoteEntrySensor()) { // && manip.getNoteSensor()
+                
+            if (manip.getArmPosition() < 1) {
                 this.currArmTarget = Manipulator.kARM_FLOOR_POS;
+                }
                 manip.intake(-1.0);
                 // intake_counter++;
                 // if (intake_counter < 100) {
@@ -83,7 +86,9 @@ public class RobotContainer
                 // }
                 // outtake
             } else if (driverPS4.R1().getAsBoolean() && manip.getNoteEntrySensor()) {
+              if (manip.getArmPosition() < 1) {
               this.currArmTarget = Manipulator.kARM_FENDER_POS;
+              }
               manip.intake(-1.0);
             
             } else if (driverPS4.L1().getAsBoolean()) {
@@ -95,6 +100,7 @@ public class RobotContainer
               manip.shoot(0.65);
                 // idle
             } else if (driverPS4.L2().getAsBoolean()) {
+                this.currArmTarget = Manipulator.kARM_HIGH_POS;
                 manip.intake(0.0);
                 manip.shoot(0.65);
             } else {
@@ -124,6 +130,10 @@ public class RobotContainer
 
             if (driverPS4.povLeft().getAsBoolean()) { 
               this.currArmTarget = Manipulator.kARM_FLOOR_POS;
+            }
+
+            if (driverPS4.povRight().getAsBoolean()) { 
+              manip.resetArmEncoder();
             }
 
             if (driverPS4.povUp().getAsBoolean()) {
@@ -190,7 +200,7 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverPS4.getRawAxis(2) * 0.75);
+        () -> driverPS4.getRightX());
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
