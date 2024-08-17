@@ -251,27 +251,27 @@ public class RobotContainer
     System.out.println("running");
     CommandScheduler.getInstance().cancelAll();
 
-    Timer.delay(0.7);
-    Command auto = new RunCommand(() -> { 
-      drivebase.driveCommand(
-        () -> -0.8,
-        () -> 0,
-        () -> 0);
+    // Timer.delay(0.7);
+    // Command auto = new RunCommand(() -> { 
+    //   drivebase.driveCommand(
+    //     () -> -0.8,
+    //     () -> 0,
+    //     () -> 0);
 
-        Timer.delay(2.5);
+    //     Timer.delay(2.5);
 
-        drivebase.driveCommand(
-        () -> 0,
-        () -> 0,
-        () -> 0);
-    });
-
-    // move arm up
-    // Command prepToShootPreload = new RunCommand(() -> {
-    //   manip.armToPosition(Manipulator.kARM_HIGH_POS);
+    //     drivebase.driveCommand(
+    //     () -> 0,
+    //     () -> 0,
+    //     () -> 0);
     // });
 
-    // Command armTask = prepToShootPreload.repeatedly();
+    // move arm up
+    Command prepToShootPreload = new RunCommand(() -> {
+      manip.armToPosition(Manipulator.kARM_FENDER_POS);
+    });
+
+    Command armTask = prepToShootPreload.repeatedly();
 
     // Command speedFlywheel = new RunCommand(() -> {
     //   // speed up shooter
@@ -282,7 +282,8 @@ public class RobotContainer
     //   manip.intake(-1);
     // });
 
-    // armTask.schedule();
+    
+    armTask.schedule();
 
     // if (manip.getArmPosition() >= 0.12) {
     //   speedFlywheel.schedule();
@@ -295,11 +296,11 @@ public class RobotContainer
     // run intake to shoot
     // manip.intake(-1);
   
-    auto.schedule();
-    /*drivebase.driveCommand(
+    // auto.schedule();
+    drivebase.driveCommand(
         () -> -0.8,
         () -> 0,
-        () -> 0).schedule();*/
+        () -> 0).schedule();
   };
 
   public void setDriveMode()
