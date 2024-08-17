@@ -114,11 +114,11 @@ public class RobotContainer
               this.currArmTarget = Manipulator.kARM_AMP_POS;
             }
 
-            if (driverPS4.circle().getAsBoolean()) {
+            if (driverPS4.triangle().getAsBoolean()) {
               this.currArmTarget = Manipulator.kARM_HIGH_POS;
             }
 
-            if (driverPS4.triangle().getAsBoolean()) {
+            if (driverPS4.circle().getAsBoolean()) {
               this.currArmTarget = Manipulator.kARM_START_POS;
             }
 
@@ -144,6 +144,7 @@ public class RobotContainer
             SmartDashboard.putNumber("Arm", manip.getArmPosition());
             SmartDashboard.putNumber("Arm Target", this.currArmTarget);
             SmartDashboard.putBoolean("Sensor", manip.getNoteEntrySensor());
+            SmartDashboard.putBoolean("Sensor 2", manip.getNoteShooterSensor());
 
 
           });
@@ -250,43 +251,43 @@ public class RobotContainer
     System.out.println("running");
     CommandScheduler.getInstance().cancelAll();
 
-    // Timer.delay(0.7);
-    // Command auto = new RunCommand(() -> { 
-    //   drivebase.driveCommand(
-    //     () -> -0.8,
-    //     () -> 0,
-    //     () -> 0);
+    Timer.delay(0.7);
+    Command auto = new RunCommand(() -> { 
+      drivebase.driveCommand(
+        () -> -0.8,
+        () -> 0,
+        () -> 0);
 
-    //     Timer.delay(2.5);
+        Timer.delay(2.5);
 
-    //     drivebase.driveCommand(
-    //     () -> 0,
-    //     () -> 0,
-    //     () -> 0);
-    // });
+        drivebase.driveCommand(
+        () -> 0,
+        () -> 0,
+        () -> 0);
+    });
 
     // move arm up
-    Command prepToShootPreload = new RunCommand(() -> {
-      manip.armToPosition(Manipulator.kARM_HIGH_POS);
-    });
+    // Command prepToShootPreload = new RunCommand(() -> {
+    //   manip.armToPosition(Manipulator.kARM_HIGH_POS);
+    // });
 
-    Command armTask = prepToShootPreload.repeatedly();
+    // Command armTask = prepToShootPreload.repeatedly();
 
-    Command speedFlywheel = new RunCommand(() -> {
-      // speed up shooter
-      manip.shoot(0.65);
-    });
+    // Command speedFlywheel = new RunCommand(() -> {
+    //   // speed up shooter
+    //   manip.shoot(0.65);
+    // });
 
-    Command runIntake = new RunCommand(() -> {
-      manip.intake(-1);
-    });
+    // Command runIntake = new RunCommand(() -> {
+    //   manip.intake(-1);
+    // });
 
-    armTask.schedule();
+    // armTask.schedule();
 
-    if (manip.getArmPosition() >= 0.12) {
-      speedFlywheel.schedule();
-      runIntake.schedule();
-    }
+    // if (manip.getArmPosition() >= 0.12) {
+    //   speedFlywheel.schedule();
+    //   runIntake.schedule();
+    // }
 
     // time to keep shooter on for
     // Timer.delay(2);
@@ -294,7 +295,7 @@ public class RobotContainer
     // run intake to shoot
     // manip.intake(-1);
   
-    // auto.schedule();
+    auto.schedule();
     /*drivebase.driveCommand(
         () -> -0.8,
         () -> 0,

@@ -8,11 +8,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Manipulator {
     private static final int ARM_LEFT_ID = 9;
-    private static final int SHOOTER_A_ID = 7;
-    private static final int SHOOTER_B_ID = 5;
+    private static final int SHOOTER_A_ID = 5;
+    private static final int SHOOTER_B_ID = 7;
     private static final int INTAKE_ID = 3;
-    private static final int SENSOR_ID = 9;
-    private static final int SENSOR2_ID = 1;
+    private static final int SENSOR_ID = 1;
+    private static final int SENSOR2_ID = 0;
 
 
     public static final double kARM_FLOOR_POS = 0.0; // intaking
@@ -82,8 +82,8 @@ public class Manipulator {
     }
 
     public void shoot(double power) {
-        shooterA.set(power);
-        shooterB.set(power); // TODO: Check polarities
+        shooterA.set(-power);
+        shooterB.set(-power); // TODO: Check polarities
     }
 
     public double getArmPosition() {
