@@ -73,9 +73,9 @@ public class RobotContainer
                 manip.intake(0.0);
           } else if (driverPS4.R1().getAsBoolean() && !manip.getNoteEntrySensor()) { // && manip.getNoteSensor()
                 
-            if (manip.getArmPosition() < 1) {
-                this.currArmTarget = Manipulator.kARM_FLOOR_POS;
-                }
+            // if (manip.getArmPosition() < 1) {
+                 this.currArmTarget = Manipulator.kARM_FLOOR_POS;
+            //     }
                 manip.intake(-1.0);
                 // intake_counter++;
                 // if (intake_counter < 100) {
@@ -86,9 +86,9 @@ public class RobotContainer
                 // }
                 // outtake
             } else if (driverPS4.R1().getAsBoolean() && manip.getNoteEntrySensor()) {
-              if (manip.getArmPosition() < 1) {
-              this.currArmTarget = Manipulator.kARM_FENDER_POS;
-              }
+             // if (manip.getArmPosition() < 1) {
+             this.currArmTarget = Manipulator.kARM_FENDER_POS;
+             // }
               manip.intake(-1.0);
             
             } else if (driverPS4.L1().getAsBoolean()) {
