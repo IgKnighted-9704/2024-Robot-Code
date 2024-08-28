@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -27,7 +28,6 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.manipulators.Manipulator;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
  * little robot logic should actually be handled in the {@link Robot} periodic methods (other than the scheduler calls).
@@ -43,6 +43,7 @@ public class RobotContainer
   // Replace with CommandPS4Controller or CommandJoystick if needed
   // final CommandXboxController driverXbox = new CommandXboxController(0);
   final CommandPS4Controller driverPS4 = new CommandPS4Controller(0);
+  final CommandXboxController driverXbox = new CommandXboxController(1);
 
   private final Manipulator manip = Manipulator.getInstance();
 
@@ -51,62 +52,46 @@ public class RobotContainer
 
         // Intake Command
         Command driveControls = new RunCommand(() -> {
-
-          // System.out.println(driverPS4.L2().getAsBoolean());
-
-          // if (driverPS4.L2().getAsBoolean()) {
-          //       manip.intake(1.0);
-          //       // shoot in speaker
-          // } else {
-          //   manip.intake(0.0);
-          // }
-          
-          // if (driverPS4.R2().getAsBoolean()) {
-          //     manip.shoot(1.0);
-          // } else {
-          //   manip.shoot(0.0);
-          // }
-          // System.out.println(intake_counter);
-
-          // if pressing intake and note is not there
-          if (driverPS4.R1().getAsBoolean() && manip.getNoteShooterSensor()) {
-                manip.intake(0.0);
-          } else if (driverPS4.R1().getAsBoolean() && !manip.getNoteEntrySensor()) { // && manip.getNoteSensor()
-                
-            // if (manip.getArmPosition() < 1) {
-                 this.currArmTarget = Manipulator.kARM_FLOOR_POS;
-            //     }
+          // PS4 Controller intake&shooter
+            // if pressing intake and note is not there
+            if (driverPS4.R1().getAsBoolean() && manip.getNoteShooterSensor()) {
+                  manip.intake(0.0);
+            } else if (driverPS4.R1().getAsBoolean() && !manip.getNoteEntrySensor()) { // && manip.getNoteSensor()
+                  
+              // if (manip.getArmPosition() < 1) {
+                  this.currArmTarget = Manipulator.kARM_FLOOR_POS;
+              //     }
+                  manip.intake(-1.0);
+                  // intake_counter++;
+                  // if (intake_counter < 100) {
+                  //   this.currArmTarget = Manipulator.kARM_FLOOR_POS;
+                  // }
+                  // else {
+                  //   this.currArmTarget = Manipulator.kARM_FENDER_POS;
+                  // }
+                  // outtake
+              } else if ((driverPS4.R1().getAsBoolean() || driverXbox.rightBumper().getAsBoolean()) && manip.getNoteEntrySensor()) {
+              // if (manip.getArmPosition() < 1) {
+              this.currArmTarget = Manipulator.kARM_FENDER_POS;
+              // }
                 manip.intake(-1.0);
-                // intake_counter++;
-                // if (intake_counter < 100) {
-                //   this.currArmTarget = Manipulator.kARM_FLOOR_POS;
-                // }
-                // else {
-                //   this.currArmTarget = Manipulator.kARM_FENDER_POS;
-                // }
-                // outtake
-            } else if (driverPS4.R1().getAsBoolean() && manip.getNoteEntrySensor()) {
-             // if (manip.getArmPosition() < 1) {
-             this.currArmTarget = Manipulator.kARM_FENDER_POS;
-             // }
-              manip.intake(-1.0);
-            
-            } else if (driverPS4.L1().getAsBoolean()) {
-                manip.intake(0.5);
-                manip.shoot(-0.5);
-                // shoot in speaker
-            } else if (driverPS4.R2().getAsBoolean()) {
-              manip.intake(-1.0);
-              manip.shoot(0.65);
-                // idle
-            } else if (driverPS4.L2().getAsBoolean()) {
-                this.currArmTarget = Manipulator.kARM_HIGH_POS;
-                manip.intake(0.0);
+              
+              } else if (driverPS4.L1().getAsBoolean()||driverXbox.leftBumper().getAsBoolean()) {
+                  manip.intake(0.5);
+                  manip.shoot(-0.5);
+                  // shoot in speaker
+              } else if (driverPS4.R2().getAsBoolean()||driverXbox.rightTrigger().getAsBoolean()) {
+                manip.intake(-1.0);
                 manip.shoot(0.65);
-            } else {
-                manip.intake(0.0);
-                manip.shoot(0.0);
-            }
+                  // idle
+              } else if (driverPS4.L2().getAsBoolean()||driverXbox.leftTrigger().getAsBoolean()) {
+                  this.currArmTarget = Manipulator.kARM_HIGH_POS;
+                  manip.intake(0.0);
+                  manip.shoot(0.65);
+              } else {
+                  manip.intake(0.0);
+                  manip.shoot(0.0);
+              }
 
             // prevent dragging on ground
             driverPS4.R1().onFalse(new InstantCommand(() -> {
@@ -114,25 +99,30 @@ public class RobotContainer
                  this.currArmTarget = Manipulator.kARM_FENDER_POS;
               intake_counter = 0;
             }));
+             driverXbox.rightBumper().onFalse(new InstantCommand(() -> {
+              if (manip.getArmPosition() < Manipulator.kARM_FENDER_POS)
+                 this.currArmTarget = Manipulator.kARM_FENDER_POS;
+              intake_counter = 0;
+            }));
 
             // arm
-            if (driverPS4.square().getAsBoolean()) {
+            if (driverPS4.square().getAsBoolean()||driverXbox.x().getAsBoolean()) {
               this.currArmTarget = Manipulator.kARM_AMP_POS;
             }
 
-            if (driverPS4.triangle().getAsBoolean()) {
+            if (driverPS4.triangle().getAsBoolean()||driverXbox.y().getAsBoolean()) {
               this.currArmTarget = Manipulator.kARM_HIGH_POS;
             }
 
-            if (driverPS4.circle().getAsBoolean()) {
+            if (driverPS4.circle().getAsBoolean()||driverXbox.b().getAsBoolean()) {
               this.currArmTarget = Manipulator.kARM_START_POS;
             }
 
-            if (driverPS4.povLeft().getAsBoolean()) { 
+            if (driverPS4.povLeft().getAsBoolean()||driverXbox.povRight().getAsBoolean()) { 
               this.currArmTarget = Manipulator.kARM_FLOOR_POS;
             }
 
-            if (driverPS4.povRight().getAsBoolean()) { 
+            if (driverPS4.povRight().getAsBoolean()||driverXbox.povUpRight().getAsBoolean()) { 
               manip.resetArmEncoder();
             }
 
@@ -146,7 +136,12 @@ public class RobotContainer
                 manip.armToPosition(this.currArmTarget);
                 // System.out.println("Moving arm");
             }
-
+          //Xbox Controller
+            driverXbox.rightBumper().onFalse(new InstantCommand(() -> {
+              if (manip.getArmPosition() < Manipulator.kARM_FENDER_POS)
+                 this.currArmTarget = Manipulator.kARM_FENDER_POS;
+              intake_counter = 0;
+            }));
             // if (driverPS4.triangle().getAsBoolean()) {
             //   manip.armToPosition(SmartDashboard.getNumber("Arm Target", 1));
             // }
@@ -168,18 +163,18 @@ public class RobotContainer
   {
     // Configure the trigger bindings
     configureBindings();
-
-    AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
-                                                                   () -> -MathUtil.applyDeadband(driverPS4.getLeftY(),
-                                                                                                OperatorConstants.LEFT_Y_DEADBAND),
-                                                                   () -> -MathUtil.applyDeadband(driverPS4.getLeftX(),
-                                                                                                OperatorConstants.LEFT_X_DEADBAND),
-                                                                   () -> -MathUtil.applyDeadband(driverPS4.getRightX(),
-                                                                                                OperatorConstants.RIGHT_X_DEADBAND),
-                                                                   driverPS4.getHID()::getTriangleButtonPressed,
-                                                                   driverPS4.getHID()::getCrossButtonPressed,
-                                                                   driverPS4.getHID()::getSquareButtonPressed,
-                                                                   driverPS4.getHID()::getCircleButtonPressed);
+      //uses PS4
+      AbsoluteDriveAdv closedAbsoluteDriveAdvP = new AbsoluteDriveAdv(drivebase,
+                                                                    () -> -MathUtil.applyDeadband(driverPS4.getLeftY(),
+                                                                                                  OperatorConstants.LEFT_Y_DEADBAND),
+                                                                    () -> -MathUtil.applyDeadband(driverPS4.getLeftX(),
+                                                                                                  OperatorConstants.LEFT_X_DEADBAND),
+                                                                    () -> -MathUtil.applyDeadband(driverPS4.getRightX(),
+                                                                                                  OperatorConstants.RIGHT_X_DEADBAND),
+                                                                    driverPS4.getHID()::getTriangleButtonPressed,
+                                                                    driverPS4.getHID()::getCrossButtonPressed,
+                                                                    driverPS4.getHID()::getSquareButtonPressed,
+                                                                    driverPS4.getHID()::getCircleButtonPressed);                                         
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
