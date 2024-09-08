@@ -37,6 +37,7 @@ public class Manipulator {
         shooterA = new CANSparkMax(SHOOTER_A_ID, CANSparkLowLevel.MotorType.kBrushless);
         shooterB = new CANSparkMax(SHOOTER_B_ID, CANSparkLowLevel.MotorType.kBrushless);
         intakeMotor = new CANSparkMax(INTAKE_ID, CANSparkLowLevel.MotorType.kBrushless);
+        SmartDashboard.putNumber("Arm PID", -3.0);
 
         sensor = new DigitalInput(SENSOR_ID);
         sensor2 = new DigitalInput(SENSOR2_ID);
@@ -70,7 +71,7 @@ public class Manipulator {
     }
 
     public void armToPosition(double position) {
-        double kP = -2.7;
+        double kP = SmartDashboard.getNumber("Arm PID", -3.0);
         double error = position - armEncoder.getPosition();
         double power = kP * error;
         moveArm(power);
