@@ -106,6 +106,10 @@ public class Manipulator {
         armEncoder.setPosition(0.0);
     }
 
+    public double getArmTarget() {
+        return pid.getSetpoint();
+    }
+
     public boolean getNoteEntrySensor() {
         return !sensor.get();
     }

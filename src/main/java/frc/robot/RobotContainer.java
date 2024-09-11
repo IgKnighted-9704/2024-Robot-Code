@@ -147,11 +147,9 @@ public class RobotContainer
             // }
 
             SmartDashboard.putNumber("Arm", manip.getArmPosition());
-            SmartDashboard.putNumber("Arm Target", this.currArmTarget);
+            SmartDashboard.putNumber("Arm Target", manip.getArmTarget());
             SmartDashboard.putBoolean("Sensor", manip.getNoteEntrySensor());
             SmartDashboard.putBoolean("Sensor 2", manip.getNoteShooterSensor());
-
-
           });
 
         Command drive = driveControls.repeatedly();
