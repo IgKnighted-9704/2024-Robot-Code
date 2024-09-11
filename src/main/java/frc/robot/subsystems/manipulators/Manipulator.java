@@ -3,6 +3,8 @@ package frc.robot.subsystems.manipulators;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkLowLevel;
+
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -28,6 +30,7 @@ public class Manipulator {
 
     private DigitalInput sensor;
     private DigitalInput sensor2;
+    private PIDController pid;
 
 
     private RelativeEncoder armEncoder;
@@ -37,7 +40,11 @@ public class Manipulator {
         shooterA = new CANSparkMax(SHOOTER_A_ID, CANSparkLowLevel.MotorType.kBrushless);
         shooterB = new CANSparkMax(SHOOTER_B_ID, CANSparkLowLevel.MotorType.kBrushless);
         intakeMotor = new CANSparkMax(INTAKE_ID, CANSparkLowLevel.MotorType.kBrushless);
-        SmartDashboard.putNumber("Arm PID", -3.0);
+        SmartDashboard.putNumber("Arm kP", 2.7);
+        SmartDashboard.putNumber("Arm kI", 0);
+        SmartDashboard.putNumber("Arm kD", 0);
+        SmartDashboard.putNumber("Arm kI Zone", 0);
+        pid = new PIDController(0.0, 0.0, 0.0);
 
         sensor = new DigitalInput(SENSOR_ID);
         sensor2 = new DigitalInput(SENSOR2_ID);
@@ -67,13 +74,18 @@ public class Manipulator {
             power = -maxPower;
         }
 
-        armLeft.set(-power);
+        armLeft.set(power);
     }
 
+
+
     public void armToPosition(double position) {
-        double kP = SmartDashboard.getNumber("Arm PID", -3.0);
-        double error = position - armEncoder.getPosition();
-        double power = kP * error;
+        pid.setPID(SmartDashboard.getNumber("Arm kP", 0), SmartDashboard.getNumber("Arm kI", 0), SmartDashboard.getNumber("Arm kD", 0));
+        pid.setIZone(SmartDashboard.getNumber("Arm kI Zone", 0));
+        double power = pid.calculate(armEncoder.getPosition(), position);
+        // double kP = SmartDashboard.getNumber("Arm PID", 2.7);
+        // double error = position - armEncoder.getPosition();
+        // double power = kP * error;
         moveArm(power);
     }
 

@@ -46,7 +46,7 @@ public class RobotContainer
   final CommandXboxController driverXbox = new CommandXboxController(1);
 
   private final Manipulator manip = Manipulator.getInstance();
-
+ 
   private double currArmTarget = Manipulator.kARM_START_POS;
   private int intake_counter = 0;
 
