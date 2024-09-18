@@ -12,12 +12,15 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
-import frc.robot.subsystems.manipulators.ShooterSubsytem;
+import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import java.io.File;
 
@@ -35,7 +38,9 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                          "swerve/maxSwerve"));
-  private final ShooterSubsytem shooter = new ShooterSubsytem();
+
+  private final ArmSubsystem armSubsystem = new ArmSubsystem();
+   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(armSubsystem);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -108,7 +113,23 @@ public class RobotContainer
     driverPS4.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     auxXbox.a().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
-    driverPS4.R1().whileTrue(Commands.run(shooter::runIntakeCommand));
+     // Arm control with the left stick Y-axis (continuous control for the arm)
+    armSubsystem.setDefaultCommand(new RunCommand(
+        () -> armSubsystem.moveArm(-driverPS4.getLeftY()),  // Assuming left stick Y-axis controls the arm
+        armSubsystem
+    ));
+
+    // Shooting with Square button (mapped from old control)
+    driverPS4.square().whileTrue(new RunCommand(() -> shooterSubsystem.shoot(0.8), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
+
+    // Intake with Cross button (mapped from old control)
+    driverPS4.cross().whileTrue(new RunCommand(() -> shooterSubsystem.intake(1.0), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
+
+    // Arm positioning with Triangle (mapped from old control)
+    driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(ArmSubsystem.kARM_HIGH_POS)));
+
 
     // driverPS4.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
     // driverPS4.circle().whileTrue(
