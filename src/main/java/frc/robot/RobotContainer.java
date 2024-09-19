@@ -129,11 +129,16 @@ public class RobotContainer
     driverPS4.R2().whileTrue(new RunCommand(() -> shooterSubsystem.shootInSpeaker(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
-    // Arm positioning with Triangle (mapped from old control)
+    // Arm positioning
     driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
     driverPS4.circle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
-
     driverPS4.square().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
+
+    driverPS4.povRight().onTrue(new InstantCommand(() -> armSubsystem.resetArmEncoder()));
+    driverPS4.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.1)));
+    driverPS4.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.1)));
+
+
 
 
     // driverPS4.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
