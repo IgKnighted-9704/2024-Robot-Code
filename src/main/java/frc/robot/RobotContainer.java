@@ -131,6 +131,7 @@ public class RobotContainer
     
     // Arm positioning with Triangle (mapped from old control)
     driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
+    driverPS4.circle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
 
     driverPS4.square().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 

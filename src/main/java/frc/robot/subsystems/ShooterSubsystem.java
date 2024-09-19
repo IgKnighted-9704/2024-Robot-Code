@@ -37,6 +37,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void stopShooter() {
     shooterA.stopMotor();
     shooterB.stopMotor();
+    stopIntake();
   }
 
   public void intake() {
@@ -55,7 +56,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void stopIntake() {
     intakeMotor.stopMotor();
     if (armSubsystem.getMeasurement() < ArmSubsystem.kARM_FENDER_POS)
-    armSubsystem.moveToShoot();
+      armSubsystem.moveToShoot();
   }
 
   public void outtake() {

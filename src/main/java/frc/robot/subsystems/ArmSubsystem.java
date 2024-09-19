@@ -29,10 +29,12 @@ public class ArmSubsystem extends PIDSubsystem {
     armMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
     armMotor.setOpenLoopRampRate(0.25);
 
-    SmartDashboard.putNumber("Arm kP", 2.7);
-    SmartDashboard.putNumber("Arm kI", 0);
-    SmartDashboard.putNumber("Arm kD", 0);
-    SmartDashboard.putNumber("Arm kI Zone", 0);
+    moveToShoot();
+
+    SmartDashboard.putNumber("Arm kP", getController().getP());
+    SmartDashboard.putNumber("Arm kI", getController().getI());
+    SmartDashboard.putNumber("Arm kD", getController().getD());
+    SmartDashboard.putNumber("Arm kI Zone", getController().getIZone());
   }
 
   @Override
@@ -80,6 +82,7 @@ public class ArmSubsystem extends PIDSubsystem {
     }
     SmartDashboard.putNumber("Arm", getMeasurement());
     SmartDashboard.putNumber("Arm Target", getController().getSetpoint());
+    // comment these out when not needed
     getController().setP(SmartDashboard.getNumber("Arm kP", 2.7));
     getController().setI(SmartDashboard.getNumber("Arm kI", 0));
     getController().setD(SmartDashboard.getNumber("Arm kD", 0));
