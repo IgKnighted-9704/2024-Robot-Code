@@ -23,6 +23,7 @@ public class ArmSubsystem extends PIDSubsystem {
 
   public ArmSubsystem() {
     super(new PIDController(2.7, 0.0, 0.0));  // PID values from SmartDashboard
+    getController().setIZone(0);
     armMotor = new CANSparkMax(ARM_LEFT_ID, CANSparkLowLevel.MotorType.kBrushless);  // Arm motor ID 9
     armEncoder = armMotor.getEncoder();
 
