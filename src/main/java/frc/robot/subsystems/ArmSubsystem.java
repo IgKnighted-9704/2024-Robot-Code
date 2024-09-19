@@ -1,11 +1,12 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.PIDSubsystem;
 
 public class ArmSubsystem extends PIDSubsystem {
 
@@ -36,8 +37,15 @@ public class ArmSubsystem extends PIDSubsystem {
 
   @Override
   public void useOutput(double output, double setpoint) {
-    double limitedOutput = Math.max(-0.5, Math.min(0.5, output));  // Limit power
-    armMotor.set(limitedOutput);
+    final double maxPower = 0.5;
+
+    // Limit power to prevent excessive torque
+    if (output > maxPower) {
+        output = maxPower;
+    } else if (output < -maxPower) {
+        output = -maxPower;
+    }   
+    armMotor.set(output);
   }
 
   @Override
@@ -45,9 +53,16 @@ public class ArmSubsystem extends PIDSubsystem {
     return armEncoder.getPosition();
   }
 
-  public void moveArm(double power) {
-    double limitedPower = Math.max(-0.5, Math.min(0.5, power));
-    armMotor.set(limitedPower);
+  public void moveToAmp() {
+    getController().setSetpoint(kARM_AMP_POS);
+  }
+
+  public void moveToShoot() {
+    getController().setSetpoint(kARM_HIGH_POS);
+  }
+
+  public void moveToFloor() {
+    getController().setSetpoint(kARM_FLOOR_POS);
   }
 
   public void stopArm() {
@@ -60,9 +75,14 @@ public class ArmSubsystem extends PIDSubsystem {
 
   @Override
   public void periodic() {
+    if (m_enabled) {
+      useOutput(m_controller.calculate(getMeasurement()), getSetpoint());
+    }
+    SmartDashboard.putNumber("Arm", getMeasurement());
+    SmartDashboard.putNumber("Arm Target", getController().getSetpoint());
     getController().setP(SmartDashboard.getNumber("Arm kP", 2.7));
     getController().setI(SmartDashboard.getNumber("Arm kI", 0));
     getController().setD(SmartDashboard.getNumber("Arm kD", 0));
-    getController().setIntegratorRange(0, SmartDashboard.getNumber("Arm kI Zone", 0));
+    getController().setIZone(SmartDashboard.getNumber("Arm kI Zone", 0));
   }
 }

@@ -113,22 +113,26 @@ public class RobotContainer
     driverPS4.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     auxXbox.a().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
-     // Arm control with the left stick Y-axis (continuous control for the arm)
-    armSubsystem.setDefaultCommand(new RunCommand(
-        () -> armSubsystem.moveArm(-driverPS4.getLeftY()),  // Assuming left stick Y-axis controls the arm
-        armSubsystem
-    ));
+    // intake
+    driverPS4.R1().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
+    
+    // outtake
+    driverPS4.L1().whileTrue(new RunCommand(() -> shooterSubsystem.outtake(), shooterSubsystem))
+      .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
 
-    // Shooting with Square button (mapped from old control)
-    driverPS4.square().whileTrue(new RunCommand(() -> shooterSubsystem.shoot(0.8), shooterSubsystem))
+    // spin up shooter
+    driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
 
-    // Intake with Cross button (mapped from old control)
-    driverPS4.cross().whileTrue(new RunCommand(() -> shooterSubsystem.intake(1.0), shooterSubsystem))
-        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
-
+    // shoot
+    driverPS4.R2().whileTrue(new RunCommand(() -> shooterSubsystem.shootInSpeaker(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
+    
     // Arm positioning with Triangle (mapped from old control)
-    driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(ArmSubsystem.kARM_HIGH_POS)));
+    driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
+
+    driverPS4.square().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
 
     // driverPS4.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));

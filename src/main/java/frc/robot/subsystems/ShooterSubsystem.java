@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -38,16 +39,38 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterB.stopMotor();
   }
 
-  public void intake(double power) {
+  public void intake() {
     if (getEntrySensor()) {
-      intakeMotor.set(power);
+      if (getShooterSensor()) {
+        stopIntake();
+        return;
+      }
+      armSubsystem.moveToShoot();
     } else {
-      stopIntake();
+      armSubsystem.moveToFloor();
     }
+    intakeMotor.set(-1.0);
   }
 
   public void stopIntake() {
     intakeMotor.stopMotor();
+    if (armSubsystem.getMeasurement() < ArmSubsystem.kARM_FENDER_POS)
+    armSubsystem.moveToShoot();
+  }
+
+  public void outtake() {
+    intakeMotor.set(0.5);
+    shoot(0.5);
+  }
+
+  public void shootInSpeaker() {
+    intakeMotor.set(-1.0);
+    shoot(0.65);
+  }
+
+  public void spinUpShooter() {
+    armSubsystem.moveToShoot();
+    shoot(0.65);
   }
 
   public boolean getEntrySensor() {
@@ -60,14 +83,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Automatically raise the arm when the entry sensor is triggered
-    if (getEntrySensor()) {
-      armSubsystem.setSetpoint(ArmSubsystem.kARM_FENDER_POS); // Example arm position
-      armSubsystem.enable();
-    }
-    // Stop the arm when the shooter sensor is triggered
-    if (getShooterSensor()) {
-      armSubsystem.stopArm();
-    }
+    SmartDashboard.putBoolean("Sensor", getEntrySensor());
+    SmartDashboard.putBoolean("Sensor 2", getShooterSensor());
   }
 }
