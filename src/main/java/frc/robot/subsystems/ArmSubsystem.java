@@ -78,7 +78,8 @@ public class ArmSubsystem extends PIDSubsystem {
 
   @Override
   public void periodic() {
-    if (m_enabled) {
+    
+    if (true) {
       useOutput(m_controller.calculate(getMeasurement()), getSetpoint());
     }
     SmartDashboard.putNumber("Arm", getMeasurement());
@@ -89,4 +90,5 @@ public class ArmSubsystem extends PIDSubsystem {
     getController().setD(SmartDashboard.getNumber("Arm kD", 0));
     getController().setIZone(SmartDashboard.getNumber("Arm kI Zone", 0));
   }
+
 }

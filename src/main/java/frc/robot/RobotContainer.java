@@ -67,7 +67,7 @@ public class RobotContainer
                                                                    driverPS4.getHID()::getTriangleButtonPressed,
                                                                    driverPS4.getHID()::getCrossButtonPressed,
                                                                    driverPS4.getHID()::getSquareButtonPressed,
-                                                                   driverPS4.getHID()::getCircleButtonPressed);
+                                                                   driverPS4.getHID()::getCircleButtonPressed);                                                              
 
     // Applies deadbands and inverts controls because joysticks
     // are back-right positive while robot
@@ -88,7 +88,7 @@ public class RobotContainer
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-        () -> driverPS4.getRightX() * 0.5);
+        () -> driverPS4.getRightX());
 
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
@@ -116,17 +116,25 @@ public class RobotContainer
     // intake
     driverPS4.R1().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
+    auxXbox.leftTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
     
     // outtake
     driverPS4.L1().whileTrue(new RunCommand(() -> shooterSubsystem.outtake(), shooterSubsystem))
       .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
+    auxXbox.leftBumper().whileTrue(new RunCommand(() -> shooterSubsystem.outtake(), shooterSubsystem))
+      .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));  
 
     // spin up shooter
     driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
-
+    auxXbox.b().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
+    
     // shoot
     driverPS4.R2().whileTrue(new RunCommand(() -> shooterSubsystem.shootInSpeaker(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
+    auxXbox.rightTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.shootInSpeaker(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
     // Arm positioning
@@ -134,9 +142,16 @@ public class RobotContainer
     driverPS4.circle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
     driverPS4.square().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
+    auxXbox.rightBumper().onTrue(new InstantCommand(()-> armSubsystem.moveToFloor()));
+    auxXbox.y().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
+
     driverPS4.povRight().onTrue(new InstantCommand(() -> armSubsystem.resetArmEncoder()));
     driverPS4.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.1)));
     driverPS4.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.1)));
+
+    auxXbox.povRight().onTrue(new InstantCommand(() -> armSubsystem.resetArmEncoder()));
+    auxXbox.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.1)));
+    auxXbox.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.1)));
 
 
 

@@ -55,6 +55,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void stopIntake() {
     intakeMotor.stopMotor();
+    shoot(0.0);
     if (armSubsystem.getMeasurement() < ArmSubsystem.kARM_FENDER_POS)
       armSubsystem.moveToShoot();
   }
