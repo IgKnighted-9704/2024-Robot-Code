@@ -196,7 +196,7 @@ public class RobotContainer
         () -> 0,
         () -> 0).schedule();
         }),
-        new WaitCommand(2.0),  // Wait for 2 seconds
+        new WaitCommand(1.4),  // Wait for 2 seconds
         new InstantCommand(() -> {
             drivebase.driveCommand(
         () -> 0,

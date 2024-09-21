@@ -47,11 +47,12 @@ public class ShooterSubsystem extends SubsystemBase {
         return;
       }
       armSubsystem.moveToShoot();
+    } else {
+      armSubsystem.moveToFloor();
     }
     if (getShooterSensor()) {
         stopIntake();
-    } else {
-      armSubsystem.moveToFloor();
+        return;
     }
     intakeMotor.set(-1.0);
   }
@@ -89,6 +90,6 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putBoolean("Sensor", getEntrySensor());
-    SmartDashboard.putBoolean("Sensor 2", getShooterSensor());
+    SmartDashboard.putBoolean("Sensor Shooter", getShooterSensor());
   }
 }
