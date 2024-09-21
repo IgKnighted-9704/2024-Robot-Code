@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -111,12 +113,12 @@ public class RobotContainer
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
 
     driverPS4.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-    auxXbox.a().onTrue(Commands.runOnce(drivebase::zeroGyro));
+    auxXbox.x().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
     // intake
-    driverPS4.R1().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+    driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
-    auxXbox.leftTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+    auxXbox.rightBumper().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
     
     // outtake
@@ -126,9 +128,9 @@ public class RobotContainer
       .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));  
 
     // spin up shooter
-    driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
+    driverPS4.R1().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
-    auxXbox.b().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
+    auxXbox.leftTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
     // shoot
@@ -138,11 +140,12 @@ public class RobotContainer
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
     // Arm positioning
-    driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
+    driverPS4.square().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
     driverPS4.circle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
-    driverPS4.square().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
+    driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
-    auxXbox.rightBumper().onTrue(new InstantCommand(()-> armSubsystem.moveToFloor()));
+    auxXbox.b().onTrue(new InstantCommand(()-> armSubsystem.moveToFloor()));
+    auxXbox.a().onTrue(new InstantCommand(()-> armSubsystem.moveToFloor()));
     auxXbox.y().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
     driverPS4.povRight().onTrue(new InstantCommand(() -> armSubsystem.resetArmEncoder()));
@@ -170,11 +173,39 @@ public class RobotContainer
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand()
-  {
-    // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
-  }
+  public Command getAutonomousCommand() {
+    // Create a new command for the autonomous period
+    Command autonomousCommand = new SequentialCommandGroup(
+        new InstantCommand(() -> {
+            armSubsystem.moveToShoot();
+        }),
+        new InstantCommand(() -> {
+            shooterSubsystem.spinUpShooter();
+        }),
+        new WaitCommand(2.0),  // Wait for 2 seconds
+        new InstantCommand(() -> {
+            shooterSubsystem.shootInSpeaker();
+        }),
+        new WaitCommand(1.0),  // Wait for 2 seconds
+        new InstantCommand(() -> {
+            shooterSubsystem.stopShooter();
+        }),
+        new InstantCommand(() -> {
+            drivebase.driveCommand(
+        () -> -0.8,
+        () -> 0,
+        () -> 0).schedule();
+        }),
+        new WaitCommand(2.0),  // Wait for 2 seconds
+        new InstantCommand(() -> {
+            drivebase.driveCommand(
+        () -> 0,
+        () -> 0,
+        () -> 0).schedule();
+        }));        
+
+    return autonomousCommand;
+}
 
   public void setDriveMode()
   {

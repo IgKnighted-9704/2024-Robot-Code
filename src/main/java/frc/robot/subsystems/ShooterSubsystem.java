@@ -47,6 +47,9 @@ public class ShooterSubsystem extends SubsystemBase {
         return;
       }
       armSubsystem.moveToShoot();
+    }
+    if (getShooterSensor()) {
+        stopIntake();
     } else {
       armSubsystem.moveToFloor();
     }
@@ -62,7 +65,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void outtake() {
     intakeMotor.set(0.5);
-    shoot(0.5);
+    shoot(-0.5);
   }
 
   public void shootInSpeaker() {
