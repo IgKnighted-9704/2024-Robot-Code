@@ -14,6 +14,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -167,7 +169,34 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
+    //return drivebase.getAutonomousCommand("New Auto");
+    return new SequentialCommandGroup(
+      new RunCommand(() -> {
+        drivebase.getAutonomousCommand("LN - Path");
+      }),
+      new RunCommand(() -> {
+        offense.intake(0.5);
+      }),
+      new WaitCommand(2),
+      new InstantCommand(() -> {
+        offense.intake(0);
+      }),
+      new RunCommand(() -> {
+        offense.outtake(0.25);
+      }),
+      new InstantCommand(() -> {
+        offense.outtake(0);
+      }),
+      new WaitCommand(0.2),
+      new RunCommand(() -> {
+        drivebase.getAutonomousCommand("Shoot - Path");
+    }),
+      new RunCommand(() -> {
+        offense.shoot(0.5);
+      }),
+      new InstantCommand(() -> {
+        offense.shoot(0);
+      }));
   }
 
   public void setDriveMode()
