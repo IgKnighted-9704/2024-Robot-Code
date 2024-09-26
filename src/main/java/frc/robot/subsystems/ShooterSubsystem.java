@@ -20,6 +20,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final DigitalInput sensor2;
   private final ArmSubsystem armSubsystem;
 
+  private boolean feeding = false;
+
   public ShooterSubsystem(ArmSubsystem armSubsystem) {
     shooterA = new CANSparkMax(SHOOTER_A_ID, CANSparkLowLevel.MotorType.kBrushless);  // Shooter A motor ID 5
     shooterB = new CANSparkMax(SHOOTER_B_ID, CANSparkLowLevel.MotorType.kBrushless);  // Shooter B motor ID 7
@@ -71,12 +73,22 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public void shootInSpeaker() {
     intakeMotor.set(-1.0);
-    shoot(0.65);
+    if (feeding)
+      shoot(1);
+    else
+      shoot(0.65);
   }
 
   public void spinUpShooter() {
+    feeding = false;
     armSubsystem.moveToShoot();
     shoot(0.65);
+  }
+
+  public void spinUpFeed() {
+    feeding = true;
+    armSubsystem.moveToShoot();
+    shoot(1);
   }
 
   public boolean getEntrySensor() {
