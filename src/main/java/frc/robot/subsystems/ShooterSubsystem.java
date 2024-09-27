@@ -2,6 +2,9 @@ package frc.robot.subsystems;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,6 +22,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final DigitalInput sensor;
   private final DigitalInput sensor2;
   private final ArmSubsystem armSubsystem;
+  private final PIDController shooterPID;
+  private final SimpleMotorFeedforward shooterfeedforward;
 
   private boolean feeding = false;
 
@@ -26,9 +31,20 @@ public class ShooterSubsystem extends SubsystemBase {
     shooterA = new CANSparkMax(SHOOTER_A_ID, CANSparkLowLevel.MotorType.kBrushless);  // Shooter A motor ID 5
     shooterB = new CANSparkMax(SHOOTER_B_ID, CANSparkLowLevel.MotorType.kBrushless);  // Shooter B motor ID 7
     intakeMotor = new CANSparkMax(INTAKE_ID, CANSparkLowLevel.MotorType.kBrushless);  // Intake motor ID 3
+    shooterfeedforward = new SimpleMotorFeedforward(0, 0, 0);
+    shooterPID = new PIDController(0, 0, 0);
     sensor = new DigitalInput(SENSOR_ID);  // Sensor ID 1
     sensor2 = new DigitalInput(SENSOR2_ID);  // Sensor2 ID 0
     this.armSubsystem = armSubsystem;
+  }
+
+  public double getShooterSpeed() {
+    return (shooterA.getEncoder().getVelocity() + shooterA.getEncoder().getVelocity()) / 2;
+  }
+
+  public void shootPID(double RPM) {
+    shooterA.setVoltage(-(shooterPID.calculate(getShooterSpeed(), RPM) + shooterfeedforward.calculate(RPM)));
+    shooterB.setVoltage(-(shooterPID.calculate(getShooterSpeed(), RPM) + shooterfeedforward.calculate(RPM)));
   }
 
   public void shoot(double power) {
@@ -88,6 +104,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void spinUpFeed() {
     feeding = true;
     armSubsystem.moveToShoot();
+    // shootPID(5000);
     shoot(1);
   }
 
@@ -103,5 +120,6 @@ public class ShooterSubsystem extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putBoolean("Sensor", getEntrySensor());
     SmartDashboard.putBoolean("Sensor Shooter", getShooterSensor());
+    SmartDashboard.putNumber("Shooter RPM", getShooterSpeed());
   }
 }
