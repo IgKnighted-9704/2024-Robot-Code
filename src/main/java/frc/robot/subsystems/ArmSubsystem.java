@@ -13,10 +13,11 @@ public class ArmSubsystem extends PIDSubsystem {
   private static final int ARM_LEFT_ID = 9;
 
   public static final double kARM_FLOOR_POS = 0.0; // intaking
-  public static final double kARM_FENDER_POS = 0.190573; // close shot
+  public static final double kARM_FENDER_POS = 0.05; // close shot
   public static final double kARM_HIGH_POS = 0.190573; // high shot
   public static final double kARM_START_POS = 0.3; // start config
   public static final double kARM_AMP_POS = 3.06; // amp scoring
+  public static final double kARM_FEED_POS = 0.462996697425842; // amp scoring
 
   private final CANSparkMax armMotor;
   private final RelativeEncoder armEncoder;
@@ -66,6 +67,14 @@ public class ArmSubsystem extends PIDSubsystem {
 
   public void moveToFloor() {
     getController().setSetpoint(kARM_FLOOR_POS);
+  }
+
+  public void moveToFender() {
+    getController().setSetpoint(kARM_FENDER_POS);
+  }
+
+  public void moveToFeed() {
+    getController().setSetpoint(kARM_FEED_POS);
   }
 
   public void stopArm() {

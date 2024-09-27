@@ -140,11 +140,13 @@ public class RobotContainer
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
     // Arm positioning
-    driverPS4.square().onTrue(new InstantCommand(() -> shooterSubsystem.spinUpFeed()));
+    driverPS4.square().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpFeed(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     driverPS4.circle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
     driverPS4.triangle().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
-    auxXbox.b().onTrue(new InstantCommand(()-> shooterSubsystem.spinUpFeed()));
+    auxXbox.b().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpFeed(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     auxXbox.a().onTrue(new InstantCommand(()-> armSubsystem.moveToFloor()));
     auxXbox.y().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
