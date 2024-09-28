@@ -4,10 +4,9 @@
 
 package frc.robot;
 
+import java.io.File;
+
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -24,7 +23,6 @@ import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
-import java.io.File;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a "declarative" paradigm, very
@@ -116,12 +114,16 @@ public class RobotContainer
     auxXbox.x().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
     // intake
+     driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
+    auxXbox.rightBumper().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
     driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new SequentialCommandGroup(
         new InstantCommand(() -> {
            shooterSubsystem.sensorOuttake();
         }),
-        new WaitCommand(0.1),  // Wait for 0.1 seconds
+        new WaitCommand(0.035),  // Wait for 0.1 seconds
         new InstantCommand(() -> {
             shooterSubsystem.stopIntake();
         })));
@@ -131,7 +133,7 @@ public class RobotContainer
         new InstantCommand(() -> {
            shooterSubsystem.sensorOuttake();;
         }),
-        new WaitCommand(0.1),  // Wait for 0.1 seconds
+        new WaitCommand(0.035),  // Wait for 0.1 seconds
         new InstantCommand(() -> {
             shooterSubsystem.stopIntake();
         })));

@@ -16,7 +16,7 @@ public class ArmSubsystem extends PIDSubsystem {
   public static final double kARM_FENDER_POS = 0.05; // close shot
   public static final double kARM_HIGH_POS = 0.190573; // high shot
   public static final double kARM_START_POS = 0.3; // start config
-  public static final double kARM_AMP_POS = 3.06; // amp scoring
+  public static final double kARM_AMP_POS = 3.01; // amp scoring
   public static final double kARM_FEED_POS = 0.462996697425842; // amp scoring
 
   private final CANSparkMax armMotor;
