@@ -39,7 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // shooterB.getEncoder().setVelocityConversionFactor(1);
     // shooterA.burnFlash();
     // shooterB.burnFlash();
-    SmartDashboard.putNumber("Shooter Target", 4500);
+    SmartDashboard.putNumber("Shooter Target", 4000);
   }
 
   public double getShooterSpeed() {
@@ -71,7 +71,8 @@ public class ShooterSubsystem extends SubsystemBase {
         armSubsystem.moveToFender();
         intakeMotor.set(-1.0);
     } else if (!entrySensor && shooterSensor) {
-        outtake();
+        // outtake();
+        stopIntake();
     } else if (entrySensor && shooterSensor) {
         stopIntake();
     } else if (!entrySensor && !shooterSensor) {
@@ -92,10 +93,17 @@ public class ShooterSubsystem extends SubsystemBase {
     shoot(-0.5);
   }
 
+  public void sensorOuttake() {
+    if (getShooterSensor()) {
+    intakeMotor.set(0.5);
+    shoot(-0.5);
+    }
+  }
+
   public void shootInSpeaker() {
     intakeMotor.set(-1.0);
     if (feeding)
-      shootPID(5600);
+      shootPID(4000);
     else
       shootPID(3600);
   }
@@ -109,7 +117,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void spinUpFeed() {
     feeding = true;
     armSubsystem.moveToFeed();
-    shootPID(SmartDashboard.getNumber("Shooter Target", 5600));
+    shootPID(SmartDashboard.getNumber("Shooter Target", 4000));
     // shoot(1);
   }
 

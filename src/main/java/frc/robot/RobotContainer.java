@@ -117,10 +117,25 @@ public class RobotContainer
 
     // intake
     driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
-        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
-    auxXbox.rightBumper().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
-        .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
-    
+        .onFalse(new SequentialCommandGroup(
+        new InstantCommand(() -> {
+           shooterSubsystem.outtake();
+        }),
+        new WaitCommand(0.2),  // Wait for 2 seconds
+        new InstantCommand(() -> {
+            shooterSubsystem.stopIntake();
+        })));
+
+    auxXbox.leftTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+        .onFalse(new SequentialCommandGroup(
+        new InstantCommand(() -> {
+           shooterSubsystem.sensorOuttake();;
+        }),
+        new WaitCommand(0.1),  // Wait for 0.1 seconds
+        new InstantCommand(() -> {
+            shooterSubsystem.sensorOuttake();
+        })));
+        
     // outtake
     driverPS4.L1().whileTrue(new RunCommand(() -> shooterSubsystem.outtake(), shooterSubsystem))
       .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
@@ -130,7 +145,7 @@ public class RobotContainer
     // spin up shooter
     driverPS4.R1().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
-    auxXbox.leftTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
+    auxXbox.rightBumper().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
     // shoot
@@ -147,16 +162,16 @@ public class RobotContainer
 
     auxXbox.b().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpFeed(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
-    auxXbox.a().onTrue(new InstantCommand(()-> armSubsystem.moveToFloor()));
+    auxXbox.a().onTrue(new InstantCommand(()-> armSubsystem.moveToShoot()));
     auxXbox.y().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
     driverPS4.povRight().onTrue(new InstantCommand(() -> armSubsystem.resetArmEncoder()));
-    driverPS4.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.1)));
-    driverPS4.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.1)));
+    driverPS4.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.05)));
+    driverPS4.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.05)));
 
     auxXbox.povRight().onTrue(new InstantCommand(() -> armSubsystem.resetArmEncoder()));
-    auxXbox.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.1)));
-    auxXbox.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.1)));
+    auxXbox.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.05)));
+    auxXbox.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.05)));
 
 
 
