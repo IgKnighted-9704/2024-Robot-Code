@@ -119,9 +119,9 @@ public class RobotContainer
     driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new SequentialCommandGroup(
         new InstantCommand(() -> {
-           shooterSubsystem.outtake();
+           shooterSubsystem.sensorOuttake();
         }),
-        new WaitCommand(0.2),  // Wait for 2 seconds
+        new WaitCommand(0.1),  // Wait for 0.1 seconds
         new InstantCommand(() -> {
             shooterSubsystem.stopIntake();
         })));
@@ -133,7 +133,7 @@ public class RobotContainer
         }),
         new WaitCommand(0.1),  // Wait for 0.1 seconds
         new InstantCommand(() -> {
-            shooterSubsystem.sensorOuttake();
+            shooterSubsystem.stopIntake();
         })));
         
     // outtake
