@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -126,25 +127,46 @@ public class RobotContainer
                                   // driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
 
     //intake
-    driverPS4.R1().whileTrue(new RunCommand(() -> offense.intake(0.5), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
-    driverPS4.R1().whileTrue(new InstantCommand(() -> offense.raiseArm2Position(Constants.ArmSetupConstants.ARM_IntakePos), offense));
-    driverXbox.rightBumper().whileTrue(new RunCommand(() -> offense.intake(0.5), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
-    driverXbox.rightBumper().whileTrue(new InstantCommand(() -> offense.raiseArm2Position(Constants.ArmSetupConstants.ARM_IntakePos), offense));
+      Command intakeCommand = new ParallelCommandGroup(
+        new RunCommand(()-> {
+        offense.intake(0.5);
+      }),
+        new InstantCommand(() -> {
+          offense.raiseArm2Position(Constants.ArmSetupConstants.ARM_IntakePos);
+        })
+      );
+      Command autoOuttake = new SequentialCommandGroup(
+        new RunCommand(() -> {
+          offense.outtake(0.5, true);
+        }),
+        new WaitCommand(0.2),
+        new RunCommand(() -> {
+          offense.stopOuttakeAIntake();
+        })
+    );
+    driverPS4.R1().whileTrue(intakeCommand).onFalse(autoOuttake);
+    driverXbox.rightBumper().whileTrue(intakeCommand).onFalse(autoOuttake);
 
     //outtake
-    driverPS4.L1().whileTrue(new RunCommand(() -> offense.outtake(0.5), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
-    driverXbox.leftBumper().whileTrue(new RunCommand(() -> offense.outtake(0.5), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
+    driverPS4.L1().whileTrue(new RunCommand(() -> offense.outtake(0.5,false), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
+    driverXbox.leftBumper().whileTrue(new RunCommand(() -> offense.outtake(0.5,false), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
 
     //rev flywheels
-    driverPS4.L2().whileTrue(new RunCommand(() -> offense.shoot(0.75), offense)).onFalse(new RunCommand(() -> offense.shoot(0.0), offense));
-    driverXbox.leftTrigger().whileTrue(new RunCommand(() -> offense.shoot(0.75), offense)).onFalse(new RunCommand(() -> offense.shoot(0.0), offense));
+    driverPS4.L2().whileTrue(new RunCommand(() -> offense.shootConsistently(6500), offense)).onFalse(new RunCommand(() -> offense.shootConsistently(0), offense));
+    driverXbox.leftTrigger().whileTrue(new RunCommand(() -> offense.shootConsistently(6500), offense)).onFalse(new RunCommand(() -> offense.shootConsistently(0.0), offense));
 
     //shoot
-    driverPS4.R2().whileTrue(new RunCommand(() -> offense.shoot(0.75), offense)).onFalse(new RunCommand(() -> offense.shoot(0.0), offense));
-    driverPS4.R2().whileTrue(new RunCommand(() -> offense.intake(0.5), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
-    driverXbox.rightTrigger().whileTrue(new RunCommand(() -> offense.shoot(0.75), offense)).onFalse(new RunCommand(() -> offense.shoot(0.0), offense));
-    driverXbox.rightTrigger().whileTrue(new RunCommand(() -> offense.intake(0.5), offense)).onFalse(new RunCommand(() -> offense.intake(0.0), offense));
+      Command shootCommand = new ParallelCommandGroup(
+        new RunCommand(() -> {
+        offense.shoot(0.75);
+      }),
+        new InstantCommand(() ->{
+          offense.intake(0.5);
+        })
+      );
 
+    driverPS4.R2().whileTrue(shootCommand).onFalse(new RunCommand(() -> offense.shootConsistently(0)));
+    driverXbox.rightTrigger().whileTrue(shootCommand).onFalse(new RunCommand(() -> offense.shootConsistently(0)));
     //amp pos
     driverPS4.triangle().onTrue(new InstantCommand(() -> offense.raiseArm2Position(Constants.ArmSetupConstants.ARM_AmpPos), offense));
     driverXbox.y().onTrue(new InstantCommand(() -> offense.raiseArm2Position(Constants.ArmSetupConstants.ARM_AmpPos), offense));
@@ -170,7 +192,29 @@ public class RobotContainer
   {
     // An example command will be run in autonomous
     //return drivebase.getAutonomousCommand("New Auto");
-    return new SequentialCommandGroup(
+    
+    //autonomous commands
+
+    //parallel shoot command
+    Command shootCommand = new ParallelCommandGroup(
+      new RunCommand(() -> {
+      offense.shoot(0.75);
+    }),
+      new InstantCommand(() ->{
+       offense.intake(0.5);        
+      }));
+
+    //parallel stop command
+    Command stopshootCommand = new ParallelCommandGroup(
+      new RunCommand(() -> {
+      offense.shoot(0);
+    }),
+      new InstantCommand(() ->{
+       offense.intake(0);        
+      }));
+
+    //drives to left most note
+    Command autonLMNote = new SequentialCommandGroup(
       new RunCommand(() -> {
         drivebase.getAutonomousCommand("LN - Path");
       }),
@@ -182,21 +226,20 @@ public class RobotContainer
         offense.intake(0);
       }),
       new RunCommand(() -> {
-        offense.outtake(0.25);
+        offense.outtake(0.25, false);
       }),
       new InstantCommand(() -> {
-        offense.outtake(0);
+        offense.outtake(0, true);
       }),
       new WaitCommand(0.2),
       new RunCommand(() -> {
         drivebase.getAutonomousCommand("Shoot - Path");
     }),
-      new RunCommand(() -> {
-        offense.shoot(0.5);
-      }),
-      new InstantCommand(() -> {
-        offense.shoot(0);
-      }));
+      shootCommand,
+      new WaitCommand(2)
+      ,stopshootCommand);
+
+      return autonLMNote;
   }
 
   public void setDriveMode()
