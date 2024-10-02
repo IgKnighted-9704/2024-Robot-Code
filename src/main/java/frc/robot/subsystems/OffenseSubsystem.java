@@ -91,12 +91,13 @@ public class OffenseSubsystem extends SubsystemBase {
         armMotor.set(speed);
     }
 
-    public boolean getEntrySensor() {
-        return !intakeSensor.get();
-      }
-    
-    public boolean getShooterSensor() {
-      return !shootSensor.get();
-    }
+        //private methods to get note state
+            private boolean getEntrySensor() {
+                return !intakeSensor.get();
+            }
+            
+            private boolean getShooterSensor() {
+            return !shootSensor.get();
+            }
 
 }

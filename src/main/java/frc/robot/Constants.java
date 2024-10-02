@@ -23,8 +23,8 @@ public final class Constants
 
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
-  public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
-  public static final double MAX_SPEED  = Units.feetToMeters(14.5);
+  public static final double LOOP_TIME  = 0.14; //s, 20ms + 110ms sprk max velocity lag
+  public static final double MAX_SPEED  = Units.feetToMeters(15.1743594);
       // Maximum speed of the robot in meters per second, used to limit acceleration.
 
   public static final class AutonConstants
@@ -53,20 +53,20 @@ public final class Constants
   public static class SubsystemContants{
     public static final int ArmID = 9;
       //Arm PID
-      public static final double kP_Arm = 0.0;
+      public static final double kP_Arm = 2.7;
       public static final double kI_Arm = 0.0;
       public static final double kD_Arm = 0.0;
-    public static final int IntakeId = 0;
-    public static final int FlyA = 0;
-    public static final int FlyB = 0;
-    public static final int intakeSensor = 0;
+    public static final int IntakeId = 3;
+    public static final int FlyA = 5;
+    public static final int FlyB = 7;
+    public static final int intakeSensor = 1;
     public static final int shootSensor = 0;
   }
   public static class ArmSetupConstants{
-    public static double ARM_AmpPos = 0;
-    public static double ARM_SpeakerPos = 0;
+    public static double ARM_AmpPos = 3.01;
+    public static double ARM_SpeakerPos = 0.05;
     public static double ARM_IntakePos = 0;
-    public static double ARM_DefaultPos = 0;
+    public static double ARM_DefaultPos = 0.1;
 
   }
 }
