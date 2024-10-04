@@ -6,6 +6,11 @@
           "open": true
         }
       },
+      "SPARK MAX [4]": {
+        "header": {
+          "open": true
+        }
+      },
       "SPARK MAX [5]": {
         "header": {
           "open": true
@@ -94,6 +99,9 @@
   },
   "NetworkTables": {
     "transitory": {
+      "FMSInfo": {
+        "open": true
+      },
       "SmartDashboard": {
         "Field": {
           "open": true
