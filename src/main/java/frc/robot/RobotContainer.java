@@ -193,38 +193,43 @@ public class RobotContainer
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // Create a new command for the autonomous period
-    Command autonomousCommand = new SequentialCommandGroup(
-        new InstantCommand(() -> {
-            armSubsystem.moveToShoot();
-        }),
-        new InstantCommand(() -> {
-            shooterSubsystem.spinUpShooter();
-        }),
-        new WaitCommand(2.0),  // Wait for 2 seconds
-        new InstantCommand(() -> {
-            shooterSubsystem.shootInSpeaker();
-        }),
-        new WaitCommand(1.0),  // Wait for 2 seconds
-        new InstantCommand(() -> {
-            shooterSubsystem.stopShooter();
-        }),
-        new InstantCommand(() -> {
-            drivebase.driveCommand(
-        () -> -0.8,
-        () -> 0,
-        () -> 0).schedule();
-        }),
-        new WaitCommand(1.4),  // Wait for 2 seconds
-        new InstantCommand(() -> {
-            drivebase.driveCommand(
-        () -> 0,
-        () -> 0,
-        () -> 0).schedule();
-        }));        
+    return drivebase.getAutonomousCommand("Test Auton");
+    // return drivebase.getAutonomousCommand("Midline Disrupt");
+    }
 
-    return autonomousCommand;
-}
+//   public Command getAutonomousCommand() {
+//     // Create a new command for the autonomous period
+//     Command autonomousCommand = new SequentialCommandGroup(
+//         new InstantCommand(() -> {
+//             armSubsystem.moveToShoot();
+//         }),
+//         new InstantCommand(() -> {
+//             shooterSubsystem.spinUpShooter();
+//         }),
+//         new WaitCommand(2.0),  // Wait for 2 seconds
+//         new InstantCommand(() -> {
+//             shooterSubsystem.shootInSpeaker();
+//         }),
+//         new WaitCommand(1.0),  // Wait for 2 seconds
+//         new InstantCommand(() -> {
+//             shooterSubsystem.stopShooter();
+//         }),
+//         new InstantCommand(() -> {
+//             drivebase.driveCommand(
+//         () -> -0.8,
+//         () -> 0,
+//         () -> 0).schedule();
+//         }),
+//         new WaitCommand(1.4),  // Wait for 2 seconds
+//         new InstantCommand(() -> {
+//             drivebase.driveCommand(
+//         () -> 0,
+//         () -> 0,
+//         () -> 0).schedule();
+//         }));        
+
+//     return autonomousCommand;
+// }
 
   public void setDriveMode()
   {
