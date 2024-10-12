@@ -15,6 +15,7 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -35,6 +37,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import swervelib.SwerveController;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
+import swervelib.imu.SwerveIMU;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
@@ -411,6 +414,7 @@ public class SwerveSubsystem extends SubsystemBase
   @Override
   public void periodic()
   {
+      // SmartDashboard.putString(swerveDrive.getPose().toString(), "Pose");
   }
 
   @Override
@@ -475,6 +479,7 @@ public class SwerveSubsystem extends SubsystemBase
    */
   public void zeroGyro()
   {
+      // swerveDrive.setGyro(swerveDrive.getGyroRotation3d().minus(new Rotation3d(0, 0, 3.1415926535897932)));
     swerveDrive.zeroGyro();
   }
 
@@ -498,12 +503,13 @@ public class SwerveSubsystem extends SubsystemBase
   {
     if (isRedAlliance())
     {
-      zeroGyro();
+      //zeroGyro();
+      // swerveDrive.setGyroOffset(swerveDrive.getGyroRotation3d().minus(new Rotation3d(0, 0, 3.14159)));
       //Set the pose 180 degrees
-      resetOdometry(new Pose2d(getPose().getTranslation(), Rotation2d.fromDegrees(180)));
+      resetOdometry(new Pose2d(getPose().getTranslation(), getPose().getRotation().minus(new Rotation2d(Math.PI))));
     } else
     {
-      zeroGyro();
+      // zeroGyro();
     }
   }
 

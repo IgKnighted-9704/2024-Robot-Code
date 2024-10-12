@@ -27,6 +27,7 @@ public class Robot extends TimedRobot
   private RobotContainer m_robotContainer;
 
   private Timer disabledTimer;
+  private boolean autonRan = false;
 
   public Robot()
   {
@@ -99,11 +100,12 @@ public class Robot extends TimedRobot
   {
     m_robotContainer.setMotorBrake(true);
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
+    
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null)
     {
       m_autonomousCommand.schedule();
+      autonRan = true;
     }
   }
 
@@ -113,6 +115,7 @@ public class Robot extends TimedRobot
   @Override
   public void autonomousPeriodic()
   {
+
   }
 
   @Override
@@ -125,6 +128,9 @@ public class Robot extends TimedRobot
     if (m_autonomousCommand != null)
     {
       m_autonomousCommand.cancel();
+    }
+    if (autonRan) {
+      m_robotContainer.resetToRed();
     }
     m_robotContainer.setDriveMode();
     m_robotContainer.setMotorBrake(true);
