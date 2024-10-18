@@ -12,6 +12,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "autonShoot"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Drive Forwards"

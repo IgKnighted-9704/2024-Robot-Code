@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.io.File;
 
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -40,13 +42,30 @@ public class RobotContainer
                                                                          "swerve/maxSwerve"));
 
   private final ArmSubsystem armSubsystem = new ArmSubsystem();
-   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(armSubsystem);
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(armSubsystem);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer()
   {
+    Command autonShoot = new SequentialCommandGroup(
+        new InstantCommand(() -> {
+            armSubsystem.moveToShoot();
+        }),
+        new InstantCommand(() -> {
+            shooterSubsystem.spinUpShooter();
+        }),
+        new WaitCommand(2.0),  // Wait for 2 seconds
+        new InstantCommand(() -> {
+            shooterSubsystem.shootInSpeaker();
+        }),
+        new WaitCommand(1.0),  // Wait for 2 seconds
+        new InstantCommand(() -> {
+            shooterSubsystem.stopShooter();
+        }));
+
+    NamedCommands.registerCommand("autonShoot", autonShoot);
     // Configure the trigger bindings
     configureBindings();
 
