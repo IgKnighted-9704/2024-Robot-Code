@@ -35,12 +35,16 @@ public class RobotContainer
 {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
+  // Initialize driver and auxiliary controllers
   final CommandPS4Controller driverPS4 = new CommandPS4Controller(0);
   final CommandXboxController auxXbox = new CommandXboxController(1);
   // The robot's subsystems and commands are defined here...
+  
+  // Initialize the drivebase subsystem with configuration file
   private final SwerveSubsystem drivebase = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                          "swerve/maxSwerve"));
 
+  // Initialize the arm and shooter subsystems
   private final ArmSubsystem armSubsystem = new ArmSubsystem();
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(armSubsystem);
 
@@ -49,6 +53,7 @@ public class RobotContainer
    */
   public RobotContainer()
   {
+    // Define an autonomous shooting command sequence
     Command autonShoot = new SequentialCommandGroup(
         new InstantCommand(() -> {
             armSubsystem.moveToShoot();
@@ -56,25 +61,25 @@ public class RobotContainer
         new InstantCommand(() -> {
             shooterSubsystem.spinUpShooter();
         }),
-        new WaitCommand(2.0),  // Wait for 2 seconds
+        new WaitCommand(2.0),  // Wait for 2 seconds to allow shooter to spin up
         new InstantCommand(() -> {
             shooterSubsystem.shootInSpeaker();
         }),
-        new WaitCommand(1.0),  // Wait for 2 seconds
+        new WaitCommand(1.0),  // Wait for 1 second to shoot
         new InstantCommand(() -> {
             shooterSubsystem.stopShooter();
         }));
 
+    // Register the autonomous command with a name
     NamedCommands.registerCommand("autonShoot", autonShoot);
+    
     // Configure the trigger bindings
     configureBindings();
 
-    // Applies deadbands and inverts controls because joysticks
-    // are back-right positive while robot
-    // controls are front-left positive
-    // left stick controls translation
-    // right stick controls the rotational velocity 
-    // buttons are quick rotation positions to different ways to face
+    // Applies deadbands and inverts controls because joysticks are back-right positive while robot controls are front-left positive
+    // Left stick controls translation
+    // Right stick controls the rotational velocity 
+    // Buttons are quick rotation positions to different ways to face
     // WARNING: default buttons are on the same buttons as the ones defined in configureBindings
     AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
                                                                    () -> -MathUtil.applyDeadband(driverPS4.getLeftY(),
@@ -88,32 +93,27 @@ public class RobotContainer
                                                                    driverPS4.getHID()::getSquareButtonPressed,
                                                                    driverPS4.getHID()::getCircleButtonPressed);                                                              
 
-    // Applies deadbands and inverts controls because joysticks
-    // are back-right positive while robot
-    // controls are front-left positive
-    // left stick controls translation
-    // right stick controls the desired angle NOT angular rotation
+    // Define drive commands based on controller inputs
+    // Field-oriented drive with direct angle control
     Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
         () -> driverPS4.getRightX(),
         () -> driverPS4.getRightY());
 
-    // Applies deadbands and inverts controls because joysticks
-    // are back-right positive while robot
-    // controls are front-left positive
-    // left stick controls translation
-    // right stick controls the angular velocity of the robot
+    // Field-oriented drive with angular velocity control
     Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
         () -> MathUtil.applyDeadband(-driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(-driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
         () -> -driverPS4.getRightX());
 
+    // Simulation mode drive command
     Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
         () -> MathUtil.applyDeadband(driverPS4.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
         () -> MathUtil.applyDeadband(driverPS4.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
         () -> driverPS4.getRawAxis(2));
 
+    // Set the default drive command based on whether the robot is in simulation
     drivebase.setDefaultCommand(
         !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
   }
@@ -127,55 +127,56 @@ public class RobotContainer
    */
   private void configureBindings()
   {
-    // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
-
+    // Zero the gyro when the cross button is pressed on PS4 or X button on Xbox
     driverPS4.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
     auxXbox.x().onTrue(Commands.runOnce(drivebase::zeroGyro));
 
-    // intake
-     driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
+    // Intake controls
+    driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
     auxXbox.rightBumper().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
+
+    // Additional intake behavior with sensor outtake
     driverPS4.L2().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new SequentialCommandGroup(
-        new InstantCommand(() -> {
-           shooterSubsystem.sensorOuttake();
-        }),
-        new WaitCommand(0.035),  // Wait for 0.1 seconds
-        new InstantCommand(() -> {
-            shooterSubsystem.stopIntake();
-        })));
+            new InstantCommand(() -> {
+               shooterSubsystem.sensorOuttake();
+            }),
+            new WaitCommand(0.035),  // Wait for 0.035 seconds
+            new InstantCommand(() -> {
+                shooterSubsystem.stopIntake();
+            })));
 
     auxXbox.leftTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.intake(), shooterSubsystem))
         .onFalse(new SequentialCommandGroup(
-        new InstantCommand(() -> {
-           shooterSubsystem.sensorOuttake();;
-        }),
-        new WaitCommand(0.035),  // Wait for 0.1 seconds
-        new InstantCommand(() -> {
-            shooterSubsystem.stopIntake();
-        })));
-        
-    // outtake
+            new InstantCommand(() -> {
+               shooterSubsystem.sensorOuttake();
+            }),
+            new WaitCommand(0.035),  // Wait for 0.035 seconds
+            new InstantCommand(() -> {
+                shooterSubsystem.stopIntake();
+            })));
+            
+    // Outtake controls
     driverPS4.L1().whileTrue(new RunCommand(() -> shooterSubsystem.outtake(), shooterSubsystem))
       .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));
     auxXbox.leftBumper().whileTrue(new RunCommand(() -> shooterSubsystem.outtake(), shooterSubsystem))
       .onFalse(new InstantCommand(shooterSubsystem::stopIntake, shooterSubsystem));  
 
-    // spin up shooter
+    // Spin up shooter
     driverPS4.R1().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     auxXbox.rightBumper().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpShooter(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
-    // shoot
+    // Shoot controls
     driverPS4.R2().whileTrue(new RunCommand(() -> shooterSubsystem.shootInSpeaker(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     auxXbox.rightTrigger().whileTrue(new RunCommand(() -> shooterSubsystem.shootInSpeaker(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     
-    // Arm positioning
+    // Arm positioning controls
     driverPS4.square().whileTrue(new RunCommand(() -> shooterSubsystem.spinUpFeed(), shooterSubsystem))
         .onFalse(new InstantCommand(shooterSubsystem::stopShooter, shooterSubsystem));
     driverPS4.circle().onTrue(new InstantCommand(() -> armSubsystem.moveToShoot()));
@@ -186,6 +187,7 @@ public class RobotContainer
     auxXbox.a().onTrue(new InstantCommand(()-> armSubsystem.moveToShoot()));
     auxXbox.y().onTrue(new InstantCommand(() -> armSubsystem.moveToAmp()));
 
+    // Arm encoder reset and manual adjustments
     driverPS4.povRight().onTrue(new InstantCommand(() -> armSubsystem.resetArmEncoder()));
     driverPS4.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.05)));
     driverPS4.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.05)));
@@ -194,9 +196,7 @@ public class RobotContainer
     auxXbox.povUp().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() + 0.05)));
     auxXbox.povDown().onTrue(new InstantCommand(() -> armSubsystem.setSetpoint(armSubsystem.getMeasurement() - 0.05)));
 
-
-
-
+    // Additional commands (currently commented out)
     // driverPS4.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
     // driverPS4.circle().whileTrue(
     //     Commands.deferredProxy(() -> drivebase.driveToPose(
@@ -212,53 +212,67 @@ public class RobotContainer
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
+    // Return the autonomous command named "Test Auton"
     return drivebase.getAutonomousCommand("Test Auton");
+    // Alternatively, use a different autonomous command
     // return drivebase.getAutonomousCommand("Midline Disrupt");
-    }
-
-//   public Command getAutonomousCommand() {
-//     // Create a new command for the autonomous period
-//     Command autonomousCommand = new SequentialCommandGroup(
-//         new InstantCommand(() -> {
-//             armSubsystem.moveToShoot();
-//         }),
-//         new InstantCommand(() -> {
-//             shooterSubsystem.spinUpShooter();
-//         }),
-//         new WaitCommand(2.0),  // Wait for 2 seconds
-//         new InstantCommand(() -> {
-//             shooterSubsystem.shootInSpeaker();
-//         }),
-//         new WaitCommand(1.0),  // Wait for 2 seconds
-//         new InstantCommand(() -> {
-//             shooterSubsystem.stopShooter();
-//         }),
-//         new InstantCommand(() -> {
-//             drivebase.driveCommand(
-//         () -> -0.8,
-//         () -> 0,
-//         () -> 0).schedule();
-//         }),
-//         new WaitCommand(1.4),  // Wait for 2 seconds
-//         new InstantCommand(() -> {
-//             drivebase.driveCommand(
-//         () -> 0,
-//         () -> 0,
-//         () -> 0).schedule();
-//         }));        
-
-//     return autonomousCommand;
-// }
-
-  public void setDriveMode()
-  {
-    //drivebase.setDefaultCommand();
   }
 
+  // Alternative autonomous command sequence (currently commented out)
+  // public Command getAutonomousCommand() {
+  //   // Create a new command for the autonomous period
+  //   Command autonomousCommand = new SequentialCommandGroup(
+  //       new InstantCommand(() -> {
+  //           armSubsystem.moveToShoot();
+  //       }),
+  //       new InstantCommand(() -> {
+  //           shooterSubsystem.spinUpShooter();
+  //       }),
+  //       new WaitCommand(2.0),  // Wait for 2 seconds
+  //       new InstantCommand(() -> {
+  //           shooterSubsystem.shootInSpeaker();
+  //       }),
+  //       new WaitCommand(1.0),  // Wait for 1 second
+  //       new InstantCommand(() -> {
+  //           shooterSubsystem.stopShooter();
+  //       }),
+  //       new InstantCommand(() -> {
+  //           drivebase.driveCommand(
+  //       () -> -0.8,
+  //       () -> 0,
+  //       () -> 0).schedule();
+  //       }),
+  //       new WaitCommand(1.4),  // Wait for 1.4 seconds
+  //       new InstantCommand(() -> {
+  //           drivebase.driveCommand(
+  //       () -> 0,
+  //       () -> 0,
+  //       () -> 0).schedule();
+  //       }));        
+
+  //   return autonomousCommand;
+  // }
+
+  /**
+   * Sets the drive mode of the robot (method currently empty).
+   */
+  public void setDriveMode()
+  {
+    // drivebase.setDefaultCommand();
+  }
+
+  /**
+   * Resets the gyro heading to align with the red alliance orientation.
+   */
   public void resetToRed() {
     drivebase.zeroGyroWithAlliance();
   }
 
+  /**
+   * Sets the motor brake mode for the drivebase.
+   *
+   * @param brake True to enable brake mode, false to disable.
+   */
   public void setMotorBrake(boolean brake)
   {
     drivebase.setMotorBrake(brake);
