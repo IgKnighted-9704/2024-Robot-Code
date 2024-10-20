@@ -56,11 +56,11 @@ public class RobotContainer
         new InstantCommand(() -> {
             shooterSubsystem.spinUpShooter();
         }),
-        new WaitCommand(2.0),  // Wait for 2 seconds
+        new WaitCommand(1.5),  // Wait for 2 seconds
         new InstantCommand(() -> {
             shooterSubsystem.shootInSpeaker();
         }),
-        new WaitCommand(1.0),  // Wait for 2 seconds
+        new WaitCommand(0.5),  // Wait for 2 seconds
         new InstantCommand(() -> {
             shooterSubsystem.stopShooter();
         }));

@@ -3,28 +3,28 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.5,
-        "y": 4.0
+        "x": 0.7,
+        "y": 4.35
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.41317591116653496,
-        "y": 4.4924038765061045
+        "x": 0.7000000000000001,
+        "y": 2.3499999999999996
       },
       "isLocked": false,
       "linkedName": "Starting Pose"
     },
     {
       "anchor": {
-        "x": 8.25,
+        "x": 8.0,
         "y": 1.0
       },
       "prevControl": {
-        "x": 6.25,
+        "x": 6.0,
         "y": 1.0
       },
       "nextControl": {
-        "x": 8.35,
+        "x": 9.0,
         "y": 1.0
       },
       "isLocked": false,
@@ -32,12 +32,12 @@
     },
     {
       "anchor": {
-        "x": 8.25,
-        "y": 7.0
+        "x": 8.0,
+        "y": 7.2
       },
       "prevControl": {
-        "x": 8.15,
-        "y": 7.0
+        "x": 7.0,
+        "y": 7.2
       },
       "nextControl": null,
       "isLocked": false,
@@ -52,7 +52,7 @@
     },
     {
       "waypointRelativePos": 1.3,
-      "rotationDegrees": 90.0,
+      "rotationDegrees": -90.0,
       "rotateFast": true
     },
     {
@@ -62,7 +62,7 @@
     },
     {
       "waypointRelativePos": 1.7,
-      "rotationDegrees": -90.0,
+      "rotationDegrees": 90.0,
       "rotateFast": true
     }
   ],
@@ -71,7 +71,7 @@
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
-    "maxAngularVelocity": 540.0,
+    "maxAngularVelocity": 720.0,
     "maxAngularAcceleration": 720.0
   },
   "goalEndState": {
